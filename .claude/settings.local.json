@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /tmp)",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/nextlevelbuilder/ui-ux-pro-max-skill/main/README.md\" -o ux_readme.md)",
+      "Bash(wc -c ux_readme.md)"
+    ]
+  }
+}
