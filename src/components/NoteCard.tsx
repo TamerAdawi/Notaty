@@ -23,6 +23,8 @@ interface Props {
 
 export default function NoteCard({ note, onToggleDone, onTogglePin, onDelete, onUpdate }: Props) {
   const [menu, setMenu] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
   const t = note.type;
   const due = t === 'goal' ? null : formatDue(note.due_date);
   const isReel = t === 'reel';
@@ -30,7 +32,14 @@ export default function NoteCard({ note, onToggleDone, onTogglePin, onDelete, on
   const isQuestion = t === 'question';
   const url = note.meta.url;
   const platform = note.meta.platform ?? 'link';
+  const hasDesc = isReel && !!url && note.content.trim() !== url;
   const showContentText = !(isReel && url && note.content.trim() === url);
+
+  function saveDesc() {
+    const text = draft.trim();
+    onUpdate(note.id, { content: text || url || note.content });
+    setEditing(false);
+  }
 
   function toggleItem(idx: number) {
     const items: ChecklistItem[] = (note.meta.items ?? []).map((it, i) =>
@@ -107,6 +116,45 @@ export default function NoteCard({ note, onToggleDone, onTogglePin, onDelete, on
               <span className="text-accent shrink-0">Open ↗</span>
             </a>
           )}
+
+          {/* reel description (what it's about) */}
+          {isReel &&
+            (editing ? (
+              <div className="mt-2">
+                <textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  rows={2}
+                  autoFocus
+                  placeholder="What's this reel about? (e.g. easy 10-min pasta recipe)"
+                  className="w-full rounded-lg bg-surface border border-hairline p-2 text-sm text-ink outline-none focus:border-accent"
+                />
+                <div className="flex gap-2 mt-1.5">
+                  <button
+                    onClick={saveDesc}
+                    className="press rounded-lg bg-accent text-white px-3 py-1 text-xs font-medium"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={() => setEditing(false)}
+                    className="press rounded-lg border border-hairline px-3 py-1 text-xs text-muted"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setDraft(hasDesc ? note.content : '');
+                  setEditing(true);
+                }}
+                className="press mt-1.5 text-xs text-accent"
+              >
+                {hasDesc ? '✏️ Edit note' : '＋ Add a note about this'}
+              </button>
+            ))}
 
           {/* checklist items */}
           {t === 'list' && note.meta.items && (
