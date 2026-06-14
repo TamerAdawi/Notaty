@@ -1,8 +1,8 @@
 import type { Note } from '../lib/db';
-import { CATEGORY_META } from '../lib/parser';
+import { TYPE_META, type NoteType } from '../lib/parser';
 import { isToday, isUpcoming } from '../lib/format';
 
-export type Filter = string; // 'all' | 'today' | 'upcoming' | 'done' | 'pinned' | `cat:<name>`
+export type Filter = string; // 'all' | 'today' | 'upcoming' | 'done' | 'pinned' | `type:<name>`
 
 const SMART: { id: Filter; label: string; icon: string }[] = [
   { id: 'all', label: 'All', icon: '🗂' },
@@ -17,7 +17,7 @@ export function matchesFilter(n: Note, f: Filter): boolean {
   if (f === 'pinned') return n.pinned;
   if (f === 'today') return !n.done && isToday(n.due_date);
   if (f === 'upcoming') return !n.done && isUpcoming(n.due_date);
-  if (f.startsWith('cat:')) return !n.done && n.category === f.slice(4);
+  if (f.startsWith('type:')) return !n.done && n.type === f.slice(5);
   return true;
 }
 
@@ -30,7 +30,10 @@ export default function FilterBar({
   active: Filter;
   onChange: (f: Filter) => void;
 }) {
-  const cats = Array.from(new Set(notes.filter((n) => !n.done).map((n) => n.category)));
+  // Types present among open notes, in a stable order.
+  const order: NoteType[] = ['task', 'reminder', 'event', 'list', 'question', 'goal', 'idea', 'note'];
+  const present = new Set(notes.filter((n) => !n.done).map((n) => n.type));
+  const types = order.filter((t) => present.has(t));
 
   const pill = (id: Filter, label: string, icon: string) => {
     const on = active === id;
@@ -51,7 +54,7 @@ export default function FilterBar({
   return (
     <div className="flex gap-2 overflow-x-auto px-4 py-2 -mx-0.5">
       {SMART.map((s) => pill(s.id, s.label, s.icon))}
-      {cats.map((c) => pill(`cat:${c}`, c, CATEGORY_META[c] ?? '📥'))}
+      {types.map((t) => pill(`type:${t}`, TYPE_META[t].label, TYPE_META[t].icon))}
     </div>
   );
 }

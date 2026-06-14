@@ -97,8 +97,8 @@ function Shell({
 
   async function addWithToast(raw: string, override?: Partial<Note>) {
     const n = (await add(raw, override)) as Note;
-    const where = n.type === 'reel' ? 'Saved' : n.category;
-    setToast(`Saved · ${TYPE_META[n.type].icon} ${where}`);
+    const label = n.type === 'reel' ? 'Saved' : TYPE_META[n.type].label;
+    setToast(`Saved · ${TYPE_META[n.type].icon} ${label}`);
     window.clearTimeout(toastTimer.current);
     toastTimer.current = window.setTimeout(() => setToast(null), 1700);
     return n;

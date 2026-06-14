@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Note } from '../lib/db';
-import { CATEGORY_META, TYPE_META, PLATFORM_META, type ChecklistItem } from '../lib/parser';
+import { TYPE_META, PLATFORM_META, type ChecklistItem } from '../lib/parser';
 import { formatDue } from '../lib/format';
 
 function prettyUrl(u: string): string {
@@ -204,7 +204,7 @@ export default function NoteCard({ note, onToggleDone, onTogglePin, onDelete, on
           {/* meta row */}
           <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-muted">
             <span className="inline-flex items-center gap-1">
-              {CATEGORY_META[note.category] ?? '📥'} {note.category}
+              {TYPE_META[t].icon} {TYPE_META[t].label}
             </span>
             {due && (
               <span className={due.overdue && !note.done ? 'text-danger' : ''}>

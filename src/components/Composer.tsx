@@ -1,12 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  parseNote,
-  TYPE_META,
-  CATEGORY_META,
-  CATEGORY_LIST,
-  type NoteType,
-  type Priority,
-} from '../lib/parser';
+import { parseNote, TYPE_META, type NoteType, type Priority } from '../lib/parser';
 import { formatDue } from '../lib/format';
 import type { Note } from '../lib/db';
 
@@ -26,14 +19,12 @@ export default function Composer({
 }) {
   const [text, setText] = useState('');
   const [oType, setOType] = useState<NoteType | null>(null);
-  const [oCat, setOCat] = useState<string | null>(null);
   const [oPriority, setOPriority] = useState<Priority | null>(null);
   const [busy, setBusy] = useState(false);
   const taRef = useRef<HTMLTextAreaElement>(null);
 
   const parsed = useMemo(() => (text.trim() ? parseNote(text) : null), [text]);
   const effType = oType ?? parsed?.type ?? 'note';
-  const effCat = oCat ?? parsed?.category ?? 'Inbox';
   const effPriority = oPriority ?? parsed?.priority ?? 'normal';
   const due = parsed ? formatDue(parsed.due_date) : null;
 
@@ -51,7 +42,6 @@ export default function Composer({
   function reset() {
     setText('');
     setOType(null);
-    setOCat(null);
     setOPriority(null);
     if (taRef.current) {
       taRef.current.style.height = 'auto';
@@ -66,7 +56,6 @@ export default function Composer({
     try {
       const override: Partial<Note> = {};
       if (oType) override.type = oType;
-      if (oCat) override.category = oCat;
       if (oPriority) override.priority = oPriority;
       await onAdd(raw, override);
       reset();
@@ -133,25 +122,8 @@ export default function Composer({
         </div>
       )}
 
-      {/* manual controls: category + priority (optional) */}
+      {/* manual controls: priority (optional) */}
       <div className="flex items-center gap-2 px-1">
-        <div className="relative">
-          <select
-            value={oCat ?? ''}
-            onChange={(e) => setOCat(e.target.value || null)}
-            className="appearance-none rounded-lg bg-surface border border-hairline pl-2.5 pr-7 py-1.5 text-sm text-ink outline-none focus:border-accent"
-            aria-label="Category"
-          >
-            <option value="">{CATEGORY_META[effCat]} {parsed ? `Auto · ${effCat}` : 'Category'}</option>
-            {CATEGORY_LIST.map((c) => (
-              <option key={c} value={c}>
-                {CATEGORY_META[c]} {c}
-              </option>
-            ))}
-          </select>
-          <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted text-xs">▾</span>
-        </div>
-
         <div className="flex gap-1">
           {PRIORITIES.map((p) => (
             <button

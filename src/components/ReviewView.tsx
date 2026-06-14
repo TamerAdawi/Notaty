@@ -1,5 +1,5 @@
 import type { Note } from '../lib/db';
-import { TYPE_META, CATEGORY_META } from '../lib/parser';
+import { TYPE_META } from '../lib/parser';
 import { ageLabel } from '../lib/format';
 
 interface Props {
@@ -36,7 +36,6 @@ export default function ReviewView({ items, onKeep, onToday, onDrop }: Props) {
             <span>
               {TYPE_META[n.type].icon} {TYPE_META[n.type].label}
             </span>
-            <span>· {CATEGORY_META[n.category] ?? '📥'} {n.category}</span>
             <span className="ml-auto rounded-full bg-surface px-2 py-0.5">⏳ {ageLabel(n.updated_at)}</span>
           </div>
 
