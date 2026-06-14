@@ -10,6 +10,7 @@ import FilterBar, { matchesFilter, type Filter } from './components/FilterBar';
 import SearchBar from './components/SearchBar';
 import EmptyState from './components/EmptyState';
 import MenuSheet from './components/MenuSheet';
+import SaveSetup from './components/SaveSetup';
 import ReviewView from './components/ReviewView';
 import { daysSince } from './lib/format';
 
@@ -68,6 +69,7 @@ function Shell({
   const [savedFilter, setSavedFilter] = useState<string>('all');
   const [search, setSearch] = useState('');
   const [menu, setMenu] = useState(false);
+  const [saveSetup, setSaveSetup] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<number | undefined>(undefined);
 
@@ -126,14 +128,20 @@ function Shell({
     [reels, savedFilter, q],
   );
 
-  const menuSheet = menu && (
-    <MenuSheet
-      notes={notes}
-      user={user}
-      theme={theme}
-      onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      onClose={() => setMenu(false)}
-    />
+  const overlays = (
+    <>
+      {menu && (
+        <MenuSheet
+          notes={notes}
+          user={user}
+          theme={theme}
+          onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          onClose={() => setMenu(false)}
+          onOpenSaveSetup={() => setSaveSetup(true)}
+        />
+      )}
+      {saveSetup && <SaveSetup onClose={() => setSaveSetup(false)} />}
+    </>
   );
 
   /* ----------------------------- CAPTURE ----------------------------- */
@@ -214,7 +222,7 @@ function Shell({
             </div>
           </div>
         )}
-        {menuSheet}
+        {overlays}
       </div>
     );
   }
@@ -245,7 +253,7 @@ function Shell({
             />
           </main>
         </div>
-        {menuSheet}
+        {overlays}
       </div>
     );
   }
@@ -324,7 +332,7 @@ function Shell({
         ＋
       </button>
 
-      {menuSheet}
+      {overlays}
     </div>
   );
 }

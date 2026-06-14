@@ -39,3 +39,28 @@ create policy "own notes - update" on public.notes
 drop policy if exists "own notes - delete" on public.notes;
 create policy "own notes - delete" on public.notes
   for delete using (auth.uid() = user_id);
+
+-- ---------------------------------------------------------------------------
+-- Save tokens: a per-user secret used by the "Save to Notaty" share endpoint
+-- (Apple Shortcut → /api/save) to attribute a shared link to the right user.
+-- ---------------------------------------------------------------------------
+create table if not exists public.save_tokens (
+  token       uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references auth.users (id) on delete cascade,
+  created_at  timestamptz not null default now(),
+  unique (user_id)
+);
+
+alter table public.save_tokens enable row level security;
+
+drop policy if exists "own token - select" on public.save_tokens;
+create policy "own token - select" on public.save_tokens
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "own token - insert" on public.save_tokens;
+create policy "own token - insert" on public.save_tokens
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "own token - delete" on public.save_tokens;
+create policy "own token - delete" on public.save_tokens
+  for delete using (auth.uid() = user_id);

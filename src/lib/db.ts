@@ -140,6 +140,31 @@ export async function updateNote(id: string, patch: Partial<Note>): Promise<Note
   return data as Note;
 }
 
+/* ----------------------- save token (share) ----------------------- */
+
+// Fetch (or lazily create) the current user's secret token used by the
+// "Save to Notaty" Apple Shortcut. Cloud-only.
+export async function getSaveToken(): Promise<string | null> {
+  if (!isCloud) return null;
+  const { data: u } = await supabase!.auth.getUser();
+  if (!u.user) return null;
+
+  const existing = await supabase!
+    .from('save_tokens')
+    .select('token')
+    .eq('user_id', u.user.id)
+    .maybeSingle();
+  if (existing.data?.token) return existing.data.token as string;
+
+  const created = await supabase!
+    .from('save_tokens')
+    .insert({ user_id: u.user.id })
+    .select('token')
+    .single();
+  if (created.error) throw created.error;
+  return created.data.token as string;
+}
+
 export async function deleteNote(id: string): Promise<void> {
   if (!isCloud) {
     lsWrite(lsRead().filter((n) => n.id !== id));

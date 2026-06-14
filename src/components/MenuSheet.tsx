@@ -6,12 +6,14 @@ export default function MenuSheet({
   theme,
   onToggleTheme,
   onClose,
+  onOpenSaveSetup,
 }: {
   notes: Note[];
   user: AppUser | null;
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
   onClose: () => void;
+  onOpenSaveSetup: () => void;
 }) {
   function exportJson() {
     const blob = new Blob([JSON.stringify(notes, null, 2)], { type: 'application/json' });
@@ -37,6 +39,15 @@ export default function MenuSheet({
         <div className="px-4 py-2 text-xs text-muted">
           {isCloud ? user?.email : 'Offline demo · stored on this device'}
         </div>
+        <button
+          className={item}
+          onClick={() => {
+            onOpenSaveSetup();
+            onClose();
+          }}
+        >
+          📲 <span>Save reels from your phone</span>
+        </button>
         <button className={item} onClick={exportJson}>
           ⬇️ <span>Export notes (JSON)</span>
           <span className="ml-auto text-muted text-xs">{notes.length}</span>
