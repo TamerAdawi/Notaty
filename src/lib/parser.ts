@@ -66,7 +66,7 @@ export const CATEGORY_META: Record<string, string> = {
 
 // Order shown in the manual category picker.
 export const CATEGORY_LIST: string[] = [
-  'Inbox', 'Work', 'Personal', 'Ideas', 'Health', 'Shopping',
+  'Inbox', 'Work', 'Personal', 'Health', 'Shopping',
   'Finance', 'Study', 'Home', 'Travel',
 ];
 
@@ -258,7 +258,7 @@ function startsWithActionVerb(text: string): boolean {
   return ACTION_VERBS.includes(bare);
 }
 
-function detectCategory(text: string, type: NoteType): string {
+function detectCategory(text: string): string {
   const lower = ' ' + text.toLowerCase() + ' ';
   let best: CategoryRule | null = null;
   let bestScore = 0;
@@ -271,7 +271,8 @@ function detectCategory(text: string, type: NoteType): string {
     }
   }
   if (best) return best.name;
-  if (type === 'idea') return 'Ideas';
+  // "idea" is already a type, so don't also force an "Ideas" category — avoids
+  // the type/category overlap. Uncategorised → Inbox.
   return 'Inbox';
 }
 
@@ -404,7 +405,7 @@ export function parseNote(rawText: string): ParsedNote {
 
   const { type, meta } = detectType(content);
   // Reels are filed manually — keyword-guessing a category from a URL is just noise.
-  const category = type === 'reel' ? 'Inbox' : detectCategory(content, type);
+  const category = type === 'reel' ? 'Inbox' : detectCategory(content);
   // Goals are aspirations, not deadlines — don't attach a due date that would read as "overdue".
   const due = type === 'goal' ? null : parseDueDate(content);
   const priority = detectPriority(content);

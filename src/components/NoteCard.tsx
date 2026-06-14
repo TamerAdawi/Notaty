@@ -28,7 +28,9 @@ export default function NoteCard({ note, onToggleDone, onTogglePin, onDelete, on
   const t = note.type;
   const due = t === 'goal' ? null : formatDue(note.due_date);
   const isReel = t === 'reel';
-  const checkable = t === 'task' || t === 'reminder' || t === 'event' || isReel;
+  // Everything except list/goal/question gets a leading done checkbox.
+  // (list completes via its items, goal via progress, question via "answered".)
+  const checkable = t === 'task' || t === 'reminder' || t === 'event' || t === 'note' || t === 'idea' || isReel;
   const isQuestion = t === 'question';
   const url = note.meta.url;
   const platform = note.meta.platform ?? 'link';
@@ -248,6 +250,15 @@ export default function NoteCard({ note, onToggleDone, onTogglePin, onDelete, on
 
       {menu && (
         <div className="absolute right-2 top-10 z-10 glass rounded-xl p-1 shadow-card text-sm">
+          <button
+            onClick={() => {
+              onToggleDone(note);
+              setMenu(false);
+            }}
+            className="press block w-full text-left px-3 py-2 rounded-lg hover:bg-surface"
+          >
+            {note.done ? '↺ Mark not done' : '✓ Mark done'}
+          </button>
           <button
             onClick={() => {
               onTogglePin(note);
