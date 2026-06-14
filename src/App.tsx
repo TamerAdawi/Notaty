@@ -11,6 +11,7 @@ import SearchBar from './components/SearchBar';
 import EmptyState from './components/EmptyState';
 import MenuSheet from './components/MenuSheet';
 import SaveSetup from './components/SaveSetup';
+import NotifSetup from './components/NotifSetup';
 import ReviewView from './components/ReviewView';
 import { daysSince } from './lib/format';
 
@@ -70,6 +71,7 @@ function Shell({
   const [search, setSearch] = useState('');
   const [menu, setMenu] = useState(false);
   const [saveSetup, setSaveSetup] = useState(false);
+  const [notifSetup, setNotifSetup] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<number | undefined>(undefined);
 
@@ -138,9 +140,11 @@ function Shell({
           onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           onClose={() => setMenu(false)}
           onOpenSaveSetup={() => setSaveSetup(true)}
+          onOpenNotifSetup={() => setNotifSetup(true)}
         />
       )}
       {saveSetup && <SaveSetup onClose={() => setSaveSetup(false)} />}
+      {notifSetup && <NotifSetup onClose={() => setNotifSetup(false)} />}
     </>
   );
 

@@ -140,6 +140,22 @@ export async function updateNote(id: string, patch: Partial<Note>): Promise<Note
   return data as Note;
 }
 
+/* --------------------- push subscriptions ------------------------- */
+
+export async function savePushSubscription(sub: {
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+}): Promise<void> {
+  if (!isCloud) throw new Error('Sign in on the live app to enable notifications.');
+  const { data: u } = await supabase!.auth.getUser();
+  if (!u.user) throw new Error('Not signed in');
+  const { error } = await supabase!
+    .from('push_subscriptions')
+    .upsert({ user_id: u.user.id, ...sub }, { onConflict: 'endpoint' });
+  if (error) throw error;
+}
+
 /* ----------------------- save token (share) ----------------------- */
 
 // Fetch (or lazily create) the current user's secret token used by the

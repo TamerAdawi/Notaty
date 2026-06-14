@@ -27,6 +27,8 @@ export default defineConfig({
       workbox: {
         navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // Pull our push / notificationclick handlers into the generated SW.
+        importScripts: ['push-sw.js'],
       },
     }),
   ],
