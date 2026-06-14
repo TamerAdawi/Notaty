@@ -36,11 +36,24 @@ export default async function handler(req, res) {
 
   let body = req.body;
   if (typeof body === 'string') {
-    try { body = JSON.parse(body); } catch { body = {}; }
+    try { body = JSON.parse(body); } catch { /* leave as raw string */ }
   }
-  const token = (body?.token || '').toString().trim();
-  const raw = (body?.url || body?.text || '').toString();
-  const urlMatch = raw.match(/https?:\/\/[^\s]+/);
+  const field = (k) => (body && typeof body === 'object' ? body[k] : undefined);
+
+  // Token may arrive in the JSON body, the ?token= query param, or an x-notaty-token header.
+  const token = (field('token') || req.query?.token || req.headers['x-notaty-token'] || '')
+    .toString()
+    .trim();
+
+  // The shared link may arrive as body.url / body.text, the raw text body, or ?url=.
+  const rawStr = (
+    field('url') ||
+    field('text') ||
+    (typeof body === 'string' ? body : '') ||
+    req.query?.url ||
+    ''
+  ).toString();
+  const urlMatch = rawStr.match(/https?:\/\/[^\s]+/);
 
   if (!token) return res.status(400).json({ error: 'Missing token' });
   if (!urlMatch) return res.status(400).json({ error: 'No URL found in the shared content' });

@@ -76,8 +76,7 @@ export default function SaveSetup({ onClose }: { onClose: () => void }) {
           ) : (
             <>
               <div className="space-y-2 mb-4">
-                <Row label="Endpoint URL" value={endpoint} />
-                <Row label="Your token (keep private)" value={token ?? ''} />
+                <Row label="Paste this as the URL (your token is included — keep private)" value={token ? `${endpoint}?token=${token}` : endpoint} />
               </div>
 
               <ol className="space-y-2.5 text-sm text-ink list-decimal pl-5">
@@ -89,14 +88,13 @@ export default function SaveSetup({ onClose }: { onClose: () => void }) {
                 <li>
                   Add the action <b>Get Contents of URL</b> and set:
                   <ul className="list-disc pl-5 mt-1 text-muted">
-                    <li><b>URL</b>: the Endpoint URL above</li>
+                    <li><b>URL</b>: paste the URL above (it already has your token)</li>
                     <li><b>Method</b>: POST</li>
                     <li><b>Request Body</b>: JSON</li>
-                    <li>Add field <code>token</code> (Text) = your token above</li>
-                    <li>Add field <code>url</code> (Text) = the <b>Shortcut Input</b> variable</li>
+                    <li>Add one field <code>url</code> (Text) = the <b>Shortcut Input</b> variable</li>
                   </ul>
                 </li>
-                <li>(Optional) add <b>Show Notification</b> “Saved to Notaty ✓”.</li>
+                <li>(Optional) add <b>Show Notification</b> = <b>Contents of URL</b> to see the result.</li>
                 <li>
                   Done! In Instagram/TikTok/Facebook tap <b>Share → Save to Notaty</b>. It appears
                   under <b>🎬 Saved</b>.
