@@ -101,7 +101,7 @@ export async function addNote(parsed: ParsedNote): Promise<Note> {
     const row: Note = {
       ...parsed,
       id: crypto.randomUUID(),
-      done: false,
+      done: parsed.done ?? false,
       pinned: false,
       created_at: now,
       updated_at: now,
@@ -114,7 +114,7 @@ export async function addNote(parsed: ParsedNote): Promise<Note> {
   const { data: u } = await supabase!.auth.getUser();
   const { data, error } = await supabase!
     .from('notes')
-    .insert({ ...parsed, user_id: u.user!.id })
+    .insert({ ...parsed, done: parsed.done ?? false, user_id: u.user!.id })
     .select()
     .single();
   if (error) throw error;
