@@ -47,6 +47,22 @@ export function googleCalendarUrl(title: string, startISO: string, durationMin =
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
+/**
+ * Add to the iPhone Reminders app via the user's "Notaty Reminder" Shortcut.
+ * We pass "title @@ ISO" as the Shortcut input; the Shortcut splits it and sets
+ * the reminder with a due time. (Reminders has no web standard, so a Shortcut is
+ * the only route.) Falls back to title-only if there's no date.
+ */
+export function addToReminders(title: string, startISO?: string | null): void {
+  const payload = startISO ? `${title} @@ ${startISO}` : title;
+  const url =
+    'shortcuts://run-shortcut?name=' +
+    encodeURIComponent('Notaty Reminder') +
+    '&input=text&text=' +
+    encodeURIComponent(payload);
+  window.location.href = url;
+}
+
 /** Trigger the device "Add to Calendar" flow via a downloadable .ics. */
 export function addToCalendar(title: string, startISO: string): void {
   const ics = buildICS(title, startISO);

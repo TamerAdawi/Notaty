@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Note } from '../lib/db';
 import { TYPE_META, PLATFORM_META, type ChecklistItem } from '../lib/parser';
 import { formatDue } from '../lib/format';
-import { addToCalendar } from '../lib/calendar';
+import { addToReminders } from '../lib/calendar';
 
 function prettyUrl(u: string): string {
   try {
@@ -235,13 +235,13 @@ export default function NoteCard({ note, onToggleDone, onTogglePin, onDelete, on
             ))}
           </div>
 
-          {/* add a dated reminder/event/task to the calendar */}
+          {/* push a dated reminder/event/task into the iPhone Reminders app */}
           {note.due_date && (t === 'reminder' || t === 'event' || t === 'task') && (
             <button
-              onClick={() => addToCalendar(note.content, note.due_date as string)}
+              onClick={() => addToReminders(note.content, note.due_date)}
               className="press mt-2 inline-flex items-center gap-1 rounded-lg bg-surface border border-hairline px-2.5 py-1 text-xs text-accent"
             >
-              📅 Add to Calendar
+              ➕ Add to Reminders
             </button>
           )}
         </div>
