@@ -238,7 +238,7 @@ export default function NoteCard({ note, onToggleDone, onTogglePin, onDelete, on
           {/* push a dated reminder/event/task into the iPhone Reminders app */}
           {note.due_date && (t === 'reminder' || t === 'event' || t === 'task') && (
             <button
-              onClick={() => addToReminders(note.content, note.due_date)}
+              onClick={() => addToReminders(note.content)}
               className="press mt-2 inline-flex items-center gap-1 rounded-lg bg-surface border border-hairline px-2.5 py-1 text-xs text-accent"
             >
               ➕ Add to Reminders

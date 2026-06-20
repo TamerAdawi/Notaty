@@ -49,17 +49,15 @@ export function googleCalendarUrl(title: string, startISO: string, durationMin =
 
 /**
  * Add to the iPhone Reminders app via the user's "Notaty Reminder" Shortcut.
- * We pass "title @@ ISO" as the Shortcut input; the Shortcut splits it and sets
- * the reminder with a due time. (Reminders has no web standard, so a Shortcut is
- * the only route.) Falls back to title-only if there's no date.
+ * Reminders has no web standard, so a Shortcut is the only route. We pass the
+ * note text (which already contains the Arabic time) as the Shortcut input.
  */
-export function addToReminders(title: string, startISO?: string | null): void {
-  const payload = startISO ? `${title} @@ ${startISO}` : title;
+export function addToReminders(title: string): void {
   const url =
     'shortcuts://run-shortcut?name=' +
     encodeURIComponent('Notaty Reminder') +
     '&input=text&text=' +
-    encodeURIComponent(payload);
+    encodeURIComponent(title);
   window.location.href = url;
 }
 
