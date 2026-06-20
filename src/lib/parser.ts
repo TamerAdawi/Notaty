@@ -125,6 +125,52 @@ const AR_WEEKDAYS: { i: number; re: RegExp }[] = [
 // A trailing check mark the user appends to mean "done": ✅ ✔ ✓ ☑
 const DONE_MARK = /[✅✔✓☑]️?\s*$/u;
 
+// Arabic spelled-out hours (Levantine). Matched only after a "ساعة" trigger.
+const AR_HOUR_WORDS: { re: RegExp; h: number }[] = [
+  { re: /الحادية عشر|احدعش|حدعش|إحدى عشر/, h: 11 },
+  { re: /الثانية عشر|اثنعش|اطنعش|تنعش|اثني عشر/, h: 12 },
+  { re: /الواحدة|وحدة|وحده|واحدة/, h: 1 },
+  { re: /الثانية|ثنتين|تنتين|اثنتين/, h: 2 },
+  { re: /الثالثة|ثلاثة|ثلاث|تلاتة|تلاته/, h: 3 },
+  { re: /الرابعة|اربعة|أربعة|اربع/, h: 4 },
+  { re: /الخامسة|خمسة|خمس/, h: 5 },
+  { re: /السادسة|ستة|ست/, h: 6 },
+  { re: /السابعة|سبعة|سبع/, h: 7 },
+  { re: /الثامنة|ثمانية|تمانية|تمن/, h: 8 },
+  { re: /التاسعة|تسعة|تسع/, h: 9 },
+  { re: /العاشرة|عشرة|عشر/, h: 10 },
+];
+const AR_TIME_TRIGGER = /الساعة|الساعه|السّاعة|السيعة|السيعه|ساعة/;
+
+function extractArabicTime(text: string): { h: number; m: number } | null {
+  const idx = text.search(AR_TIME_TRIGGER);
+  if (idx === -1) return null;
+  const after = text.slice(idx);
+  let h: number | null = null;
+  for (const w of AR_HOUR_WORDS) {
+    if (w.re.test(after)) { h = w.h; break; }
+  }
+  if (h === null) return null;
+
+  let m = 0;
+  if (/ونص|و نص/.test(after)) m = 30;
+  else if (/وربع|و ربع/.test(after)) m = 15;
+  else if (/الا ربع|إلا ربع|الاربع/.test(after)) m = -15;
+
+  // AM/PM cue; otherwise assume 1–7 = afternoon/evening, 8–12 = morning/noon.
+  let pm: boolean | null = null;
+  if (/صبح|صباح|الفجر/.test(after)) pm = false;
+  else if (/مسا|مساء|الليل|بالليل|العصر|عصر|الظهر|ظهر|المغرب|العشاء/.test(after)) pm = true;
+
+  let hour = h;
+  if (pm === true && hour < 12) hour += 12;
+  else if (pm === false && hour === 12) hour = 0;
+  else if (pm === null && hour >= 1 && hour <= 7) hour += 12;
+
+  if (m === -15) { hour = (hour + 23) % 24; m = 45; }
+  return { h: hour % 24, m };
+}
+
 /* ----------------------------- helpers ---------------------------- */
 
 function startOfDay(d: Date): Date {
@@ -145,7 +191,7 @@ function extractTime(text: string): { h: number; m: number } | null {
   }
   m = text.match(/\bat\s*(\d{1,2}):(\d{2})\b/);
   if (m) return { h: parseInt(m[1], 10), m: parseInt(m[2], 10) };
-  return null;
+  return extractArabicTime(text);
 }
 
 function hasClockTime(text: string): boolean {
@@ -170,10 +216,10 @@ function parseDueDate(rawText: string): Date | null {
       base.setHours(20, 0, 0, 0);
       return base;
     }
-  } else if (/\b(tomorrow|tmrw|tmw)\b|بكرة|غدا|غدًا/.test(text)) {
+  } else if (/\b(tomorrow|tmrw|tmw)\b|بكرة|بكرا|بكره|غدا|غدًا/.test(text)) {
     base = startOfDay(now);
     base.setDate(base.getDate() + 1);
-  } else if (/day after tomorrow|بعد بكرة|بعد غد/.test(text)) {
+  } else if (/day after tomorrow|بعد بكرة|بعد بكرا|بعد غد/.test(text)) {
     base = startOfDay(now);
     base.setDate(base.getDate() + 2);
   } else if (/\bnext week\b|الأسبوع القادم|الاسبوع الجاي/.test(text)) {
