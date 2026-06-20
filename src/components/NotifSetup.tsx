@@ -83,7 +83,7 @@ export default function NotifSetup({ onClose }: { onClose: () => void }) {
               <button
                 onClick={handleEnable}
                 disabled={busy}
-                className="press w-full rounded-xl bg-accent text-white font-semibold py-3 shadow-glow disabled:opacity-40"
+                className="press w-full rounded-xl bg-accent text-onAccent font-semibold py-3 shadow-glow disabled:opacity-40"
               >
                 {enabled ? '🔔 Notifications enabled — re-enable this device' : '🔔 Enable notifications'}
               </button>

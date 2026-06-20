@@ -16,6 +16,7 @@ export default {
           DEFAULT: 'var(--c-accent)',
           glow: 'var(--c-accent-glow)',
         },
+        onAccent: 'var(--c-on-accent)',
         // semantic status (theme-independent)
         danger: '#E5484D',
         warn: '#F5A623',
@@ -33,7 +34,7 @@ export default {
         cinema: 'cubic-bezier(0.16, 1, 0.3, 1)',
       },
       boxShadow: {
-        glow: '0 0 24px 0 rgba(94,106,210,0.35)',
+        glow: '0 0 24px 0 var(--c-accent-glow)',
         card: '0 1px 0 0 rgba(255,255,255,0.04) inset, 0 8px 24px -12px rgba(0,0,0,0.8)',
       },
       keyframes: {

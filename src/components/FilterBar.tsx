@@ -42,7 +42,7 @@ export default function FilterBar({
         key={id}
         onClick={() => onChange(id)}
         className={`press shrink-0 rounded-full px-3.5 py-1.5 text-sm border whitespace-nowrap ${
-          on ? 'bg-accent text-white border-accent shadow-glow' : 'bg-surface text-muted border-hairline'
+          on ? 'bg-accent text-onAccent border-accent shadow-glow' : 'bg-surface text-muted border-hairline'
         }`}
       >
         <span className="mr-1">{icon}</span>

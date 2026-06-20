@@ -59,7 +59,7 @@ export default function AuthScreen() {
         <button
           onClick={() => handle('in')}
           disabled={busy || !email || !password}
-          className="press w-full rounded-xl bg-accent text-white font-semibold py-3 shadow-glow disabled:opacity-40 disabled:shadow-none"
+          className="press w-full rounded-xl bg-accent text-onAccent font-semibold py-3 shadow-glow disabled:opacity-40 disabled:shadow-none"
         >
           {busy ? '…' : 'Sign in'}
         </button>

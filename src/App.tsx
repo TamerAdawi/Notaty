@@ -331,7 +331,7 @@ function Shell({
       <button
         onClick={() => setView('capture')}
         aria-label="New note"
-        className="press fixed bottom-6 right-1/2 translate-x-[210px] max-[480px]:right-5 max-[480px]:translate-x-0 z-30 h-14 w-14 rounded-full bg-accent text-white text-2xl grid place-items-center shadow-glow"
+        className="press fixed bottom-6 right-1/2 translate-x-[210px] max-[480px]:right-5 max-[480px]:translate-x-0 z-30 h-14 w-14 rounded-full bg-accent text-onAccent text-2xl grid place-items-center shadow-glow"
       >
         ＋
       </button>
@@ -364,7 +364,7 @@ function SavedFilters({
         key={id}
         onClick={() => onChange(id)}
         className={`press shrink-0 rounded-full px-3.5 py-1.5 text-sm border whitespace-nowrap ${
-          on ? 'bg-accent text-white border-accent shadow-glow' : 'bg-surface text-muted border-hairline'
+          on ? 'bg-accent text-onAccent border-accent shadow-glow' : 'bg-surface text-muted border-hairline'
         }`}
       >
         <span className="mr-1">{icon}</span>

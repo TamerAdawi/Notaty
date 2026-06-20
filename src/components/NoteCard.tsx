@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Note } from '../lib/db';
 import { TYPE_META, PLATFORM_META, type ChecklistItem } from '../lib/parser';
 import { formatDue } from '../lib/format';
-import { addToReminders } from '../lib/calendar';
+import { addToCalendar } from '../lib/calendar';
 
 function prettyUrl(u: string): string {
   try {
@@ -135,7 +135,7 @@ export default function NoteCard({ note, onToggleDone, onTogglePin, onDelete, on
                 <div className="flex gap-2 mt-1.5">
                   <button
                     onClick={saveDesc}
-                    className="press rounded-lg bg-accent text-white px-3 py-1 text-xs font-medium"
+                    className="press rounded-lg bg-accent text-onAccent px-3 py-1 text-xs font-medium"
                   >
                     Save
                   </button>
@@ -170,7 +170,7 @@ export default function NoteCard({ note, onToggleDone, onTogglePin, onDelete, on
                 >
                   <span
                     className={`h-4 w-4 shrink-0 rounded border grid place-items-center text-[10px] ${
-                      it.done ? 'bg-accent border-accent text-white' : 'border-muted text-transparent'
+                      it.done ? 'bg-accent border-accent text-onAccent' : 'border-muted text-transparent'
                     }`}
                   >
                     ✓
@@ -235,13 +235,13 @@ export default function NoteCard({ note, onToggleDone, onTogglePin, onDelete, on
             ))}
           </div>
 
-          {/* push a dated reminder/event/task into the iPhone Reminders app */}
+          {/* add a dated reminder/event/task to the calendar */}
           {note.due_date && (t === 'reminder' || t === 'event' || t === 'task') && (
             <button
-              onClick={() => addToReminders(note.content)}
+              onClick={() => addToCalendar(note.content, note.due_date as string)}
               className="press mt-2 inline-flex items-center gap-1 rounded-lg bg-surface border border-hairline px-2.5 py-1 text-xs text-accent"
             >
-              ➕ Add to Reminders
+              📅 Add to Calendar
             </button>
           )}
         </div>

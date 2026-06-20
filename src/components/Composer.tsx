@@ -143,7 +143,7 @@ export default function Composer({
           onClick={submit}
           disabled={!text.trim() || busy}
           aria-label="Add note"
-          className="press ml-auto shrink-0 h-10 px-4 rounded-full bg-accent text-white font-semibold grid place-items-center shadow-glow disabled:opacity-30 disabled:shadow-none"
+          className="press ml-auto shrink-0 h-10 px-4 rounded-full bg-accent text-onAccent font-semibold grid place-items-center shadow-glow disabled:opacity-30 disabled:shadow-none"
         >
           {busy ? '…' : 'Add ↑'}
         </button>

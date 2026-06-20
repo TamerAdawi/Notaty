@@ -11,8 +11,9 @@
   --c-hairline: rgba(255, 255, 255, 0.08);
   --c-ink: #ededef;
   --c-muted: #8a8f98;
-  --c-accent: #5e6ad2;
-  --c-accent-glow: rgba(94, 106, 210, 0.2);
+  --c-accent: #e8a808; /* Notaty logo gold (also the iOS Notes yellow vibe) */
+  --c-accent-glow: rgba(232, 168, 8, 0.28);
+  --c-on-accent: #1a1300; /* dark text/icons on the yellow */
   --glass-bg: rgba(10, 10, 12, 0.72);
 }
 
@@ -24,8 +25,9 @@ html.light {
   --c-hairline: rgba(0, 0, 0, 0.1);
   --c-ink: #16181d;
   --c-muted: #5a6069;
-  --c-accent: #4f46e5;
-  --c-accent-glow: rgba(79, 70, 229, 0.18);
+  --c-accent: #c8890a; /* slightly deeper gold for contrast on light */
+  --c-accent-glow: rgba(200, 137, 10, 0.22);
+  --c-on-accent: #1a1300;
   --glass-bg: rgba(255, 255, 255, 0.78);
 }
 
@@ -73,13 +75,13 @@ html.light .app-bg::after {
   opacity: 0.1;
 }
 .app-bg::before {
-  background: #5e6ad2;
+  background: #e8a808;
   top: -120px;
   left: -80px;
   animation: blob 18s ease-in-out infinite;
 }
 .app-bg::after {
-  background: #8b5cf6;
+  background: #f5c542;
   bottom: -140px;
   right: -100px;
   animation: blob 22s ease-in-out infinite reverse;
