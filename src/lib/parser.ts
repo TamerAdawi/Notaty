@@ -3,6 +3,7 @@
 
 export type NoteType =
   | 'reel'
+  | 'hustle'
   | 'reminder'
   | 'event'
   | 'list'
@@ -72,6 +73,7 @@ export const CATEGORY_LIST: string[] = [
 
 export const TYPE_META: Record<NoteType, { icon: string; label: string }> = {
   reel: { icon: '🎬', label: 'Saved' },
+  hustle: { icon: '🚀', label: 'Hustle' },
   reminder: { icon: '⏰', label: 'Reminder' },
   event: { icon: '📅', label: 'Event' },
   list: { icon: '☑️', label: 'List' },
@@ -103,6 +105,15 @@ const REMINDER_WORDS = ['remind me', 'reminder', "don't forget", 'dont forget', 
 const EVENT_WORDS = ['meeting', 'appointment', 'flight', 'dinner', 'lunch', 'breakfast', 'interview', 'party', 'wedding', 'conference', 'webinar', 'call with', 'date with', 'موعد', 'اجتماع', 'حفلة', 'مقابلة'];
 const GOAL_WORDS = ['goal:', 'goal ', 'my goal', 'i want to', 'i wanna', 'aim to', 'aiming to', 'resolution', 'habit', 'هدف', 'اريد ان', 'أريد أن', 'بدي اصير', 'بدي اوصل'];
 const QUESTION_STARTS = ['what', 'how', 'why', 'when', 'where', 'who', 'which', 'should', 'can', 'could', 'would', 'is', 'are', 'do', 'does', 'did', 'will', 'هل', 'كيف', 'ليش', 'لماذا', 'متى', 'وين', 'اين', 'ماذا', 'شو'];
+
+// Money-making / side-project cues → the Hustle Ideas section.
+const HUSTLE_WORDS = [
+  'hustle', 'side hustle', 'make money', 'making money', 'money-making', 'business idea',
+  'startup', 'start-up', 'passive income', 'monetize', 'monetise', 'dropship', 'side income',
+  'earn money', 'sell online', 'ecommerce', 'e-commerce', 'affiliate', 'freelanc',
+  'بيزنس', 'مشروع تجاري', 'مشروع ربحي', 'فكرة مشروع', 'دخل اضافي', 'دخل إضافي', 'مصدر دخل',
+  'اربح', 'ربح', 'اكسب', 'تجارة', 'تجاري', 'ستارت اب', 'بيع اونلاين', 'دروبشيبينغ', 'فري لانس',
+];
 
 const URGENT_WORDS = ['urgent', 'asap', 'critical', 'emergency', 'عاجل', 'ضروري'];
 const HIGH_WORDS = ['important', 'high priority', 'priority', "don't forget", 'مهم'];
@@ -414,6 +425,9 @@ function detectType(text: string): { type: NoteType; meta: NoteMeta } {
     if (loc && !/\d/.test(loc[1])) meta.location = loc[1].trim();
     return { type: 'event', meta };
   }
+
+  // 5b. Hustle / money-making idea (before task, so "اعمل مشروع تجاري" files here)
+  if (includesAny(lower, HUSTLE_WORDS)) return { type: 'hustle', meta: {} };
 
   // 6. Task
   if (startsWithActionVerb(text) || includesAny(lower, TASK_PHRASES)) {

@@ -44,7 +44,7 @@ export default function App() {
   return <Shell userId={user!.id} theme={theme} setTheme={setTheme} />;
 }
 
-type View = 'capture' | 'notes' | 'saved' | 'review';
+type View = 'capture' | 'notes' | 'saved' | 'hustle' | 'review';
 
 function matchesSaved(n: Note, f: string): boolean {
   if (f === 'all') return true;
@@ -76,9 +76,14 @@ function Shell({
   const toastTimer = useRef<number | undefined>(undefined);
 
   const reels = useMemo(() => notes.filter((n) => n.type === 'reel'), [notes]);
-  const plainNotes = useMemo(() => notes.filter((n) => n.type !== 'reel'), [notes]);
+  const hustle = useMemo(() => notes.filter((n) => n.type === 'hustle'), [notes]);
+  const plainNotes = useMemo(
+    () => notes.filter((n) => n.type !== 'reel' && n.type !== 'hustle'),
+    [notes],
+  );
   const openNotesCount = plainNotes.filter((n) => !n.done).length;
   const unwatchedCount = reels.filter((n) => !n.done).length;
+  const openHustleCount = hustle.filter((n) => !n.done).length;
   const staleItems = useMemo(
     () =>
       plainNotes
@@ -128,6 +133,15 @@ function Shell({
         .filter(textMatch)
         .sort((a, b) => Number(a.done) - Number(b.done)),
     [reels, savedFilter, q],
+  );
+
+  const visibleHustle = useMemo(
+    () =>
+      hustle
+        .filter((n) => matchesFilter(n, filter))
+        .filter(textMatch)
+        .sort((a, b) => Number(b.pinned) - Number(a.pinned)),
+    [hustle, filter, q],
   );
 
   const overlays = (
@@ -182,7 +196,7 @@ function Shell({
             </p>
             <Composer onAdd={addWithToast} autoFocus />
 
-            <div className="mt-5 flex items-center justify-center gap-2">
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
               <button
                 onClick={() => setView('notes')}
                 className="press flex items-center gap-2 rounded-full bg-surface border border-hairline px-4 py-2 text-sm text-ink"
@@ -199,6 +213,15 @@ function Shell({
                 🎬 Saved
                 <span className="rounded-full bg-accent/20 text-accent px-2 py-0.5 text-xs">
                   {unwatchedCount}
+                </span>
+              </button>
+              <button
+                onClick={() => setView('hustle')}
+                className="press flex items-center gap-2 rounded-full bg-surface border border-hairline px-4 py-2 text-sm text-ink"
+              >
+                🚀 Hustle
+                <span className="rounded-full bg-accent/20 text-accent px-2 py-0.5 text-xs">
+                  {openHustleCount}
                 </span>
               </button>
             </div>
@@ -264,7 +287,10 @@ function Shell({
 
   /* ------------------------ SHARED BROWSE CHROME --------------------- */
   const isSaved = view === 'saved';
-  const list = isSaved ? visibleReels : visibleNotes;
+  const isHustle = view === 'hustle';
+  const list = isSaved ? visibleReels : isHustle ? visibleHustle : visibleNotes;
+  const sectionTitle = isSaved ? '🎬 Saved' : isHustle ? '🚀 Hustle Ideas' : '🗂 My notes';
+  const sectionCount = isSaved ? reels.length : isHustle ? hustle.length : plainNotes.length;
 
   return (
     <div className="min-h-dvh">
@@ -278,21 +304,12 @@ function Shell({
           >
             ←
           </button>
-          <h1 className="font-display text-lg font-bold tracking-tight">
-            {isSaved ? '🎬 Saved' : '🗂 My notes'}
-          </h1>
-          <span className="text-muted text-xs ml-1">{isSaved ? reels.length : plainNotes.length}</span>
-          {/* switch between the two sections */}
-          <button
-            onClick={() => setView(isSaved ? 'notes' : 'saved')}
-            className="press ml-auto rounded-full bg-surface border border-hairline px-3 py-1 text-xs text-ink"
-          >
-            {isSaved ? '🗂 Notes' : '🎬 Saved'}
-          </button>
+          <h1 className="font-display text-lg font-bold tracking-tight">{sectionTitle}</h1>
+          <span className="text-muted text-xs ml-1">{sectionCount}</span>
           <button
             onClick={() => setMenu(true)}
             aria-label="Menu"
-            className="press h-8 w-8 rounded-full grid place-items-center text-muted hover:bg-surface"
+            className="press ml-auto h-8 w-8 rounded-full grid place-items-center text-muted hover:bg-surface"
           >
             ⋯
           </button>
@@ -303,7 +320,7 @@ function Shell({
           {isSaved ? (
             <SavedFilters reels={reels} active={savedFilter} onChange={setSavedFilter} />
           ) : (
-            <FilterBar notes={plainNotes} active={filter} onChange={setFilter} />
+            <FilterBar notes={isHustle ? hustle : plainNotes} active={filter} onChange={setFilter} />
           )}
         </div>
 
@@ -312,7 +329,7 @@ function Shell({
           {loading ? (
             <div className="text-muted text-sm text-center py-16">Loading…</div>
           ) : list.length === 0 ? (
-            <EmptyState filter={search ? 'search' : isSaved ? 'saved' : filter} />
+            <EmptyState filter={search ? 'search' : isSaved ? 'saved' : isHustle ? 'hustle' : filter} />
           ) : (
             list.map((n) => (
               <NoteCard

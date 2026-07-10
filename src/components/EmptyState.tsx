@@ -5,6 +5,7 @@ export default function EmptyState({ filter }: { filter: string }) {
     upcoming: { icon: '🗓', title: 'No upcoming items', sub: 'Add a note with “tomorrow” or a date.' },
     done: { icon: '🎉', title: 'Nothing done yet', sub: 'Completed items will collect here.' },
     saved: { icon: '🎬', title: 'No saved links yet', sub: 'Paste a reel link from Instagram, TikTok or Facebook to save it.' },
+    hustle: { icon: '🚀', title: 'No hustle ideas yet', sub: 'Jot a money-making idea — or tap the 🚀 chip to file one here.' },
   };
   const e = map[filter] ?? { icon: '🔍', title: 'No matches', sub: 'Try a different search or filter.' };
   return (
