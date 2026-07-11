@@ -14,6 +14,8 @@ import SaveSetup from './components/SaveSetup';
 import NotifSetup from './components/NotifSetup';
 import ReviewView from './components/ReviewView';
 import { SinceSection } from './components/since/SinceSection';
+import { WishSection } from './components/wish/WishSection';
+import type { WishFields } from './components/wish/AddWishModal';
 import { useSince } from './hooks/useSince';
 import { statusLevel } from './lib/since';
 import { daysSince } from './lib/format';
@@ -47,7 +49,7 @@ export default function App() {
   return <Shell userId={user!.id} theme={theme} setTheme={setTheme} />;
 }
 
-type View = 'capture' | 'notes' | 'saved' | 'hustle' | 'since' | 'review';
+type View = 'capture' | 'notes' | 'saved' | 'hustle' | 'wish' | 'since' | 'review';
 
 function matchesSaved(n: Note, f: string): boolean {
   if (f === 'all') return true;
@@ -82,13 +84,20 @@ function Shell({
 
   const reels = useMemo(() => notes.filter((n) => n.type === 'reel'), [notes]);
   const hustle = useMemo(() => notes.filter((n) => n.type === 'hustle'), [notes]);
+  const wish = useMemo(() => notes.filter((n) => n.type === 'wish'), [notes]);
   const plainNotes = useMemo(
-    () => notes.filter((n) => n.type !== 'reel' && n.type !== 'hustle'),
+    () => notes.filter((n) => n.type !== 'reel' && n.type !== 'hustle' && n.type !== 'wish'),
     [notes],
   );
   const openNotesCount = plainNotes.filter((n) => !n.done).length;
   const unwatchedCount = reels.filter((n) => !n.done).length;
   const openHustleCount = hustle.filter((n) => !n.done).length;
+  const openWishCount = wish.filter((n) => !n.done).length;
+
+  const addWish = (f: WishFields) =>
+    add(f.name, { type: 'wish', meta: { price: f.price, currency: f.currency, url: f.url } }).then(
+      () => {},
+    );
   const staleItems = useMemo(
     () =>
       plainNotes
@@ -240,6 +249,15 @@ function Shell({
                   </span>
                 )}
               </button>
+              <button
+                onClick={() => setView('wish')}
+                className="press flex items-center gap-2 rounded-full bg-surface border border-hairline px-4 py-2 text-sm text-ink"
+              >
+                🛍️ Wish list
+                <span className="rounded-full bg-accent/20 text-accent px-2 py-0.5 text-xs">
+                  {openWishCount}
+                </span>
+              </button>
             </div>
 
             {staleItems.length > 0 && (
@@ -326,6 +344,43 @@ function Shell({
             </button>
           </header>
           <SinceSection since={since} />
+        </div>
+        {overlays}
+      </div>
+    );
+  }
+
+  /* ---------------------------- WISH LIST --------------------------- */
+  if (view === 'wish') {
+    return (
+      <div className="min-h-dvh">
+        <div className="app-bg" />
+        <div className="mx-auto w-full max-w-md flex flex-col min-h-dvh">
+          <header className="glass sticky top-0 z-20 flex items-center gap-2 px-3 py-3">
+            <button
+              onClick={() => setView('capture')}
+              aria-label="Back to capture"
+              className="press h-8 w-8 rounded-full grid place-items-center text-ink hover:bg-surface"
+            >
+              ←
+            </button>
+            <h1 className="font-display text-lg font-bold tracking-tight">🛍️ Wish list</h1>
+            <span className="text-muted text-xs ml-1">{wish.length}</span>
+            <button
+              onClick={() => setMenu(true)}
+              aria-label="Menu"
+              className="press ml-auto h-8 w-8 rounded-full grid place-items-center text-muted hover:bg-surface"
+            >
+              ⋯
+            </button>
+          </header>
+          <WishSection
+            items={wish}
+            loading={loading}
+            onAdd={addWish}
+            onToggleBought={toggleDone}
+            onDelete={remove}
+          />
         </div>
         {overlays}
       </div>

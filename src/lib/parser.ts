@@ -4,6 +4,7 @@
 export type NoteType =
   | 'reel'
   | 'hustle'
+  | 'wish'
   | 'reminder'
   | 'event'
   | 'list'
@@ -25,8 +26,10 @@ export interface NoteMeta {
   goalTarget?: string; // goal — the raw target phrase ("run 5k")
   goalProgress?: number; // goal — 0..100
   location?: string; // event — "at <place>"
-  url?: string; // reel / saved link
+  url?: string; // reel / saved link, or wish product link
   platform?: string; // reel — instagram | tiktok | facebook | youtube | link
+  price?: number; // wish — amount
+  currency?: string; // wish — e.g. ₪, $, JD
 }
 
 export interface ParsedNote {
@@ -74,6 +77,7 @@ export const CATEGORY_LIST: string[] = [
 export const TYPE_META: Record<NoteType, { icon: string; label: string }> = {
   reel: { icon: '🎬', label: 'Saved' },
   hustle: { icon: '🚀', label: 'Hustle' },
+  wish: { icon: '🛍️', label: 'Wish' },
   reminder: { icon: '⏰', label: 'Reminder' },
   event: { icon: '📅', label: 'Event' },
   list: { icon: '☑️', label: 'List' },
