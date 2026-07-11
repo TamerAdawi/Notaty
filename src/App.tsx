@@ -13,6 +13,9 @@ import MenuSheet from './components/MenuSheet';
 import SaveSetup from './components/SaveSetup';
 import NotifSetup from './components/NotifSetup';
 import ReviewView from './components/ReviewView';
+import { SinceSection } from './components/since/SinceSection';
+import { useSince } from './hooks/useSince';
+import { statusLevel } from './lib/since';
 import { daysSince } from './lib/format';
 
 // Open, non-reel items untouched for this many days surface in Review.
@@ -44,7 +47,7 @@ export default function App() {
   return <Shell userId={user!.id} theme={theme} setTheme={setTheme} />;
 }
 
-type View = 'capture' | 'notes' | 'saved' | 'hustle' | 'review';
+type View = 'capture' | 'notes' | 'saved' | 'hustle' | 'since' | 'review';
 
 function matchesSaved(n: Note, f: string): boolean {
   if (f === 'all') return true;
@@ -65,6 +68,8 @@ function Shell({
 }) {
   const { user } = useAuth();
   const { notes, loading, error, add, remove, update, toggleDone, togglePin } = useNotes(userId);
+  const since = useSince(userId);
+  const sinceAttention = since.items.filter((i) => statusLevel(i) !== 'ok').length;
   const [view, setView] = useState<View>('capture');
   const [filter, setFilter] = useState<Filter>('all');
   const [savedFilter, setSavedFilter] = useState<string>('all');
@@ -224,6 +229,17 @@ function Shell({
                   {openHustleCount}
                 </span>
               </button>
+              <button
+                onClick={() => setView('since')}
+                className="press flex items-center gap-2 rounded-full bg-surface border border-hairline px-4 py-2 text-sm text-ink"
+              >
+                🔄 Since when
+                {sinceAttention > 0 && (
+                  <span className="rounded-full bg-danger/20 text-danger px-2 py-0.5 text-xs">
+                    {sinceAttention}
+                  </span>
+                )}
+              </button>
             </div>
 
             {staleItems.length > 0 && (
@@ -279,6 +295,37 @@ function Shell({
               onDrop={reviewDrop}
             />
           </main>
+        </div>
+        {overlays}
+      </div>
+    );
+  }
+
+  /* ---------------------------- SINCE WHEN --------------------------- */
+  if (view === 'since') {
+    return (
+      <div className="min-h-dvh">
+        <div className="app-bg" />
+        <div className="mx-auto w-full max-w-md flex flex-col min-h-dvh">
+          <header className="glass sticky top-0 z-20 flex items-center gap-2 px-3 py-3">
+            <button
+              onClick={() => setView('capture')}
+              aria-label="Back to capture"
+              className="press h-8 w-8 rounded-full grid place-items-center text-ink hover:bg-surface"
+            >
+              ←
+            </button>
+            <h1 className="font-display text-lg font-bold tracking-tight">🔄 Since when</h1>
+            <span className="text-muted text-xs ml-1">{since.items.length}</span>
+            <button
+              onClick={() => setMenu(true)}
+              aria-label="Menu"
+              className="press ml-auto h-8 w-8 rounded-full grid place-items-center text-muted hover:bg-surface"
+            >
+              ⋯
+            </button>
+          </header>
+          <SinceSection since={since} />
         </div>
         {overlays}
       </div>

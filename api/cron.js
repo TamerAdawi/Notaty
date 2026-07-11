@@ -76,6 +76,27 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true, job, sent });
   }
 
+  /* ------------------- "Since when" overdue cycles ------------------ */
+  if (job === 'cycles') {
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: items } = await sb
+      .from('since_items_status')
+      .select('id,user_id,name,interval_days,reminder_offset_days,last_reminded_on,days_since');
+    const overdue = (items || []).filter(
+      (i) => i.days_since > i.interval_days + i.reminder_offset_days && i.last_reminded_on !== today,
+    );
+    let sent = 0;
+    for (const it of overdue) {
+      sent += await pushToUser(sb, it.user_id, {
+        title: '🔄 Since when',
+        body: `${it.name} — ${it.days_since} days since last time.`,
+        url: '/',
+      });
+      await sb.from('since_items').update({ last_reminded_on: today }).eq('id', it.id);
+    }
+    return res.status(200).json({ ok: true, job: 'cycles', overdue: overdue.length, sent });
+  }
+
   /* ---------------------------- reminders --------------------------- */
   const now = new Date().toISOString();
   const { data: due } = await sb

@@ -94,3 +94,52 @@ create policy "own push - delete" on public.push_subscriptions
 
 -- When a reminder/event was last notified (Stage 2 scheduler uses this).
 alter table public.notes add column if not exists reminded_at timestamptz;
+
+-- ---------------------------------------------------------------------------
+-- "Since when" — recurring-cycle tracker (merged from the Dawra app).
+-- ---------------------------------------------------------------------------
+create table if not exists public.since_items (
+  id                   uuid primary key default gen_random_uuid(),
+  user_id              uuid not null references auth.users (id) on delete cascade,
+  name                 text not null,
+  emoji                text,
+  interval_days        int not null default 1,
+  reminder_offset_days int not null default 0,
+  last_reminded_on     date,
+  created_at           timestamptz not null default now()
+);
+
+create table if not exists public.since_history (
+  id          uuid primary key default gen_random_uuid(),
+  item_id     uuid not null references public.since_items (id) on delete cascade,
+  user_id     uuid not null references auth.users (id) on delete cascade,
+  logged_at   timestamptz not null default now(),
+  notes       text,
+  created_at  timestamptz not null default now()
+);
+
+create index if not exists since_items_user_idx on public.since_items (user_id);
+create index if not exists since_history_item_idx on public.since_history (item_id);
+
+alter table public.since_items enable row level security;
+alter table public.since_history enable row level security;
+
+drop policy if exists "own since_items" on public.since_items;
+create policy "own since_items" on public.since_items
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "own since_history" on public.since_history;
+create policy "own since_history" on public.since_history
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- Computed "days since last log" per item (respects the caller's RLS).
+create or replace view public.since_items_status
+with (security_invoker = on) as
+select
+  i.id, i.user_id, i.name, i.emoji, i.interval_days, i.reminder_offset_days,
+  i.last_reminded_on, i.created_at,
+  coalesce(max(h.logged_at), i.created_at) as last_logged_at,
+  greatest(0, (current_date - coalesce(max(h.logged_at), i.created_at)::date)) as days_since
+from public.since_items i
+left join public.since_history h on h.item_id = i.id
+group by i.id;
