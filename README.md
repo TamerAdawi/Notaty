@@ -1,90 +1,112 @@
+<div align="center">
+
+<img src="public/apple-touch-icon.png" width="96" height="96" alt="Notaty logo" />
+
 # Notaty · نوتاتي
 
-Dump whatever's on your mind into one box — Notaty auto-files it into the right **category**,
-detects the **type**, parses a **due date** from natural language, sets **priority**, pulls out
-**#tags**, and tracks **done / not done**. Built mobile-first as an installable iPhone PWA.
+**Dump whatever's on your mind — Notaty figures out what it is and files it for you.**
 
-## The 8 note types (auto-detected)
+A smart, bilingual (English + Arabic) notes PWA that reads free‑form text and turns it into
+structured tasks, reminders, lists, goals, saved reels, wish‑list items and more — then reminds
+you at the right time. Installs on your phone like a native app.
 
-| Type | Example you'd type | What it does |
-|------|--------------------|--------------|
-| ⏰ Reminder | `remind me to take meds at 9pm` | due time (today/tomorrow if passed) |
-| 📅 Event | `team meeting Thursday 3pm at office` | date + time, location |
-| ☑️ List | `groceries: milk, eggs, bread` | tickable sub-items |
+[**▶ Live app**](https://notaty-delta.vercel.app) · installable on iOS/Android home screen
+
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind-3-06B6D4?logo=tailwindcss&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20Auth-3ECF8E?logo=supabase&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-Serverless-000?logo=vercel&logoColor=white)
+![PWA](https://img.shields.io/badge/PWA-installable%20%2B%20push-5A0FC8?logo=pwa&logoColor=white)
+
+</div>
+
+---
+
+## Why it exists
+
+I capture thoughts, tasks and ideas all day — mostly in Arabic — and the stock Notes app just
+piles them up until they rot. Notaty replaces that with **one capture box** that understands what
+you wrote and routes it to the right place, plus reminders so nothing slips.
+
+## Highlights
+
+- 🧠 **On‑device NLP parser** — classifies each note into one of **11 types** and extracts a **due date, time, priority and #tags** from plain text. **No AI API calls** — it's a fast, private, rule‑based engine.
+- 🌍 **Bilingual by design** — full **Levantine Arabic** support: imperative verbs, weekday names (incl. fused forms like `للجمعة`), **spelled‑out clock times** (`الساعة وحدة`, `ثنتين ونص`, `الا ربع`), and a trailing ✅ that marks a note done.
+- 🔔 **Real push notifications** on iPhone — recurring reminders, events, and a weekly digest, delivered via **Web Push** (VAPID) to the installed PWA.
+- 📲 **Share‑to‑save** — an iOS Shortcut posts Instagram/TikTok/Facebook reels straight into the app with no copy‑paste, via a serverless ingest endpoint.
+- 🗂️ **Purpose‑built sections** — Notes, 🎬 Saved reels, 🚀 Hustle ideas, 🛍️ Wish list (with running total), and 🔄 “Since when?” (a recurring‑cycle tracker with overdue nudges).
+- 🕰️ **Review & resurface** — stale, untouched items bubble up for one‑tap *keep / do / drop* triage so nothing you wrote gets forgotten.
+- 📴 **Offline‑first PWA** — installable, works offline, dark/light themes, per‑user privacy.
+
+## The 11 auto‑detected types
+
+| Type | You type… | It becomes |
+|------|-----------|------------|
+| ✅ Task | `call dentist tomorrow 5pm !important` | task · due tomorrow 17:00 · high |
+| ⏰ Reminder | `ذكرني بكرا الساعة وحدة` | reminder · tomorrow 13:00 (fires a push) |
+| 📅 Event | `team meeting Thursday 3pm at office` | event · date/time · location |
+| ☑️ List | `groceries: milk, eggs, bread` | list with tickable items |
 | ❓ Question | `what's the best Supabase tier?` | answered / unanswered |
-| 🎯 Goal | `goal: run 5k by August` | progress bar, never "overdue" |
-| ✅ Task | `call dentist tomorrow 5pm !important` | done checkbox |
+| 🎯 Goal | `goal: run 5k by August` | progress bar, never “overdue” |
 | 💡 Idea | `idea: app for splitting bills` | plain idea |
+| 🚀 Hustle | `side hustle: sell planners on Etsy` | money‑making idea (own section) |
+| 🛍️ Wish | *(via form)* item + price | wish‑list item + running total |
+| 🎬 Saved | any reel/video link | platform badge · watched toggle |
 | 📝 Note | `the weather is nice today` | default |
 
-Also understands Arabic cues (`بكرة`, `لازم`, `موعد`, `قائمة`, `هدف`, `ذكرني`…).
 The composer shows a **live preview** of what it detected and lets you override the type with one tap.
 
-## Tech
+## Architecture
 
-- **React + TypeScript + Vite**, **Tailwind** (Cinema-Dark theme), **vite-plugin-pwa** (offline + installable)
-- **Supabase** (Postgres + auth) for private, synced storage — with an automatic **localStorage demo mode** when no keys are set
-- On-device smart parser in `src/lib/parser.ts` (no AI calls, fully private)
+```
+iPhone PWA  ──►  React + TS + Vite (Tailwind)          ← installable, offline (Workbox SW)
+                    │  on-device parser (src/lib/parser.ts)
+                    ▼
+                 Supabase  ── Postgres + Row-Level Security + Auth   ← private, synced
+                    ▲
+   iOS Shortcut ─┐  │            Vercel serverless functions
+   (share sheet)  └─┼──►  /api/save     ingest shared reels (per-user token)
+                    ├──►  /api/cron      reminders · weekly digest · overdue cycles
+   pg_cron ────────►┘     /api/push-test send a test Web Push
+                          (web-push / VAPID → installed PWAs)
+```
 
-## Run locally
+**Stack:** React 18 · TypeScript · Vite · Tailwind · `vite-plugin-pwa` (Workbox) · Supabase
+(Postgres, Auth, RLS, `pg_cron` + `pg_net`) · Vercel serverless functions · `web-push` (VAPID).
+
+**Notable engineering:**
+- A dependency‑free bilingual parser (`src/lib/parser.ts`): type detection, natural‑language date/time (EN + Arabic numerals & words), categories, priority, tags.
+- Web Push end‑to‑end: service‑worker handlers, VAPID subscriptions, a scheduler (`pg_cron` → serverless) that fires due reminders + a weekly digest and marks them sent (no duplicates).
+- Row‑Level Security so every table is private per user; a capability‑scoped token lets the share endpoint attribute a reel to the right account without exposing credentials.
+
+## Run it yourself
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173  (works immediately in offline demo mode)
+npm run dev          # http://localhost:5173  — runs instantly in offline demo mode
 ```
 
-Build / preview production:
-
-```bash
-npm run build
-npm run preview
-```
-
-## Connect the database (Supabase) — ~3 minutes
-
-1. Create a free project at <https://supabase.com>.
-2. **SQL Editor → New query**, paste the contents of [`schema.sql`](schema.sql), **Run**.
-   (Creates the `notes` table with per-user Row-Level Security.)
-3. **Project Settings → API**, copy **Project URL** and the **anon public** key.
-4. Copy `.env.example` to `.env.local` and fill them in:
-
-   ```
-   VITE_SUPABASE_URL=https://YOURPROJECT.supabase.co
-   VITE_SUPABASE_ANON_KEY=eyJhbGc...
-   ```
-
-5. Restart `npm run dev`. The header badge flips from **⚲ Demo** to **☁ Synced**, and you'll get a
-   sign-in / sign-up screen. Your notes are now private to your account and sync across devices.
-
-## Deploy to the web (free) + install on iPhone
-
-**Vercel (recommended):**
-
-1. Push this folder to a GitHub repo (or use `vercel` CLI).
-2. Import it at <https://vercel.com> — it auto-detects Vite (build `npm run build`, output `dist`).
-3. Add the two env vars (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) in the Vercel project settings.
-4. Deploy → you get an `https://notaty-xxxx.vercel.app` URL.
-
-**On your iPhone:** open that URL in **Safari** → tap **Share** → **Add to Home Screen**.
-It launches full-screen like a native app, works offline, and syncs when online.
-
-> Add your deployed URL to Supabase **Authentication → URL Configuration → Site URL** so email
-> confirmation links point back to your app.
+To enable cloud sync, create a free [Supabase](https://supabase.com) project, run
+[`schema.sql`](schema.sql) in its SQL editor, and put your Project URL + anon key in `.env.local`
+(see [`.env.example`](.env.example)). Deploy free to Vercel and add the same env vars.
 
 ## Project layout
 
 ```
 src/
-  lib/parser.ts     smart parser (8 types, categories, NL dates, priority, tags)
-  lib/db.ts         data layer (Supabase ↔ localStorage)
-  lib/supabase.ts   client from env
-  lib/format.ts     due-date formatting
-  hooks/            useAuth, useNotes
-  components/       AuthScreen, Composer, NoteCard, FilterBar, SearchBar, MenuSheet, EmptyState
-schema.sql          Supabase table + RLS
-scripts/generate-icons.mjs   regenerates PWA icons
+  lib/parser.ts        bilingual NLP engine (types, NL dates/times, priority, tags)
+  lib/db.ts            data layer (Supabase ↔ localStorage demo fallback)
+  lib/since.ts         "Since when?" cycle tracker
+  lib/calendar.ts      .ics "Add to Calendar"
+  hooks/               useAuth · useNotes · useSince
+  components/          Composer, NoteCard, sections (since / wish), setup modals, …
+api/                   Vercel functions: save · cron · push-test
+public/push-sw.js      Web Push service-worker handlers
+schema.sql             Postgres tables, RLS policies, views
 ```
 
-## Export
+## License
 
-Menu (⋯) → **Export notes (JSON)** downloads a full backup any time.
+MIT © [Tamer Adawi](https://github.com/TamerAdawi)
