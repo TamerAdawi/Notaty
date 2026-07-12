@@ -1,111 +1,108 @@
-<div align="center">
+# Notaty
 
-<img src="public/apple-touch-icon.png" width="96" height="96" alt="Notaty logo" />
+A notes app that reads free-form text — in English or Arabic — decides what each note *is*
+(a task, a reminder with a due time, a shopping list, a saved video link, a recurring chore…),
+and files it accordingly. Installable as a PWA; sends real push reminders.
 
-# Notaty · نوتاتي
+**Live:** https://notaty-delta.vercel.app
 
-**Dump whatever's on your mind — Notaty figures out what it is and files it for you.**
+<p align="center"><img src="public/og-image.png" width="640" alt="Notaty" /></p>
 
-A smart, bilingual (English + Arabic) notes PWA that reads free‑form text and turns it into
-structured tasks, reminders, lists, goals, saved reels, wish‑list items and more — then reminds
-you at the right time. Installs on your phone like a native app.
+> Note: currently the live URL opens a sign-in screen (see [Guest mode](#status)). To evaluate the
+> app without an account, clone and run it — it boots straight into an on-device demo mode.
 
-[**▶ Live app**](https://notaty-delta.vercel.app) · installable on iOS/Android home screen
+## Stack
 
-![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)
-![Tailwind](https://img.shields.io/badge/Tailwind-3-06B6D4?logo=tailwindcss&logoColor=white)
-![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20Auth-3ECF8E?logo=supabase&logoColor=white)
-![Vercel](https://img.shields.io/badge/Vercel-Serverless-000?logo=vercel&logoColor=white)
-![PWA](https://img.shields.io/badge/PWA-installable%20%2B%20push-5A0FC8?logo=pwa&logoColor=white)
+| Layer | Choice |
+|-------|--------|
+| Frontend | React 18, TypeScript, Vite, Tailwind CSS |
+| Offline / install | `vite-plugin-pwa` (Workbox service worker) |
+| Backend / DB / Auth | Supabase — Postgres, Auth, Row-Level Security, `pg_cron` + `pg_net` |
+| Serverless | Vercel functions (`/api/*`) |
+| Push | Web Push (VAPID) via `web-push` |
+| Hosting / CI | Vercel (GitHub → auto-deploy) |
 
-</div>
-
----
-
-## Why it exists
-
-I capture thoughts, tasks and ideas all day — mostly in Arabic — and the stock Notes app just
-piles them up until they rot. Notaty replaces that with **one capture box** that understands what
-you wrote and routes it to the right place, plus reminders so nothing slips.
-
-## Highlights
-
-- 🧠 **On‑device NLP parser** — classifies each note into one of **11 types** and extracts a **due date, time, priority and #tags** from plain text. **No AI API calls** — it's a fast, private, rule‑based engine.
-- 🌍 **Bilingual by design** — full **Levantine Arabic** support: imperative verbs, weekday names (incl. fused forms like `للجمعة`), **spelled‑out clock times** (`الساعة وحدة`, `ثنتين ونص`, `الا ربع`), and a trailing ✅ that marks a note done.
-- 🔔 **Real push notifications** on iPhone — recurring reminders, events, and a weekly digest, delivered via **Web Push** (VAPID) to the installed PWA.
-- 📲 **Share‑to‑save** — an iOS Shortcut posts Instagram/TikTok/Facebook reels straight into the app with no copy‑paste, via a serverless ingest endpoint.
-- 🗂️ **Purpose‑built sections** — Notes, 🎬 Saved reels, 🚀 Hustle ideas, 🛍️ Wish list (with running total), and 🔄 “Since when?” (a recurring‑cycle tracker with overdue nudges).
-- 🕰️ **Review & resurface** — stale, untouched items bubble up for one‑tap *keep / do / drop* triage so nothing you wrote gets forgotten.
-- 📴 **Offline‑first PWA** — installable, works offline, dark/light themes, per‑user privacy.
-
-## The 11 auto‑detected types
-
-| Type | You type… | It becomes |
-|------|-----------|------------|
-| ✅ Task | `call dentist tomorrow 5pm !important` | task · due tomorrow 17:00 · high |
-| ⏰ Reminder | `ذكرني بكرا الساعة وحدة` | reminder · tomorrow 13:00 (fires a push) |
-| 📅 Event | `team meeting Thursday 3pm at office` | event · date/time · location |
-| ☑️ List | `groceries: milk, eggs, bread` | list with tickable items |
-| ❓ Question | `what's the best Supabase tier?` | answered / unanswered |
-| 🎯 Goal | `goal: run 5k by August` | progress bar, never “overdue” |
-| 💡 Idea | `idea: app for splitting bills` | plain idea |
-| 🚀 Hustle | `side hustle: sell planners on Etsy` | money‑making idea (own section) |
-| 🛍️ Wish | *(via form)* item + price | wish‑list item + running total |
-| 🎬 Saved | any reel/video link | platform badge · watched toggle |
-| 📝 Note | `the weather is nice today` | default |
-
-The composer shows a **live preview** of what it detected and lets you override the type with one tap.
+~3,200 lines of application code · 17 components · 3 hooks · 5 tables + 1 view · zero runtime UI dependencies beyond React.
 
 ## Architecture
 
 ```
-iPhone PWA  ──►  React + TS + Vite (Tailwind)          ← installable, offline (Workbox SW)
-                    │  on-device parser (src/lib/parser.ts)
-                    ▼
-                 Supabase  ── Postgres + Row-Level Security + Auth   ← private, synced
-                    ▲
-   iOS Shortcut ─┐  │            Vercel serverless functions
-   (share sheet)  └─┼──►  /api/save     ingest shared reels (per-user token)
-                    ├──►  /api/cron      reminders · weekly digest · overdue cycles
-   pg_cron ────────►┘     /api/push-test send a test Web Push
-                          (web-push / VAPID → installed PWAs)
+React PWA ──► on-device parser (lib/parser.ts)    installable, offline (Workbox SW)
+    │
+    ▼
+ Supabase  ── Postgres + Row-Level Security + Auth   private per user, synced
+    ▲
+    │         Vercel serverless functions
+ iOS Shortcut ─► /api/save       ingest a shared link (per-user capability token)
+ pg_cron ──────► /api/cron       due reminders · weekly digest · overdue cycles
+                 /api/push-test  send a Web Push to your devices
+                 └─ web-push / VAPID ─► installed PWAs
 ```
 
-**Stack:** React 18 · TypeScript · Vite · Tailwind · `vite-plugin-pwa` (Workbox) · Supabase
-(Postgres, Auth, RLS, `pg_cron` + `pg_net`) · Vercel serverless functions · `web-push` (VAPID).
+### Decisions worth explaining
 
-**Notable engineering:**
-- A dependency‑free bilingual parser (`src/lib/parser.ts`): type detection, natural‑language date/time (EN + Arabic numerals & words), categories, priority, tags.
-- Web Push end‑to‑end: service‑worker handlers, VAPID subscriptions, a scheduler (`pg_cron` → serverless) that fires due reminders + a weekly digest and marks them sent (no duplicates).
-- Row‑Level Security so every table is private per user; a capability‑scoped token lets the share endpoint attribute a reel to the right account without exposing credentials.
+**The parser is the product, and it runs on the client.** `src/lib/parser.ts` (~430 LOC, no
+dependencies) classifies each note into one of 11 types and extracts a due date/time, priority and
+tags from plain text. Type detection is ordered — reminders before events before tasks — so
+`ذكرني بكرا الساعة وحدة` becomes a reminder due tomorrow at 13:00, while `team meeting Thursday 3pm`
+becomes an event. It parses **Arabic** natural language directly: imperative verbs, weekday names
+including preposition-fused forms (`للجمعة`), spelled-out clock times (`الساعة وحدة`, `ثنتين ونص`,
+`الا ربع`), and a trailing `✅` that marks a note done. Keeping this on-device (vs. an LLM call)
+makes classification instant, free, offline-capable and private.
 
-## Run it yourself
+**One data layer, two backends.** `src/lib/db.ts` exposes a single async API and transparently
+targets either Supabase or `localStorage`, chosen at load time by whether Supabase env keys are
+present (`isCloud`). This is what makes the local demo mode and the cloud app the same code path.
+
+**Optimistic UI with server reconciliation.** `useNotes` mutates React state immediately on
+add/update/delete, then persists; inserts use the row returned by Postgres so the client picks up
+server-generated fields (`id`, timestamps). Ordering and "days since" are computed in SQL, not the
+client.
+
+**Push without a native app.** iOS Safari only allows Web Push for home-screen-installed PWAs, so
+the SW registers push/notification handlers (`public/push-sw.js`, injected into the Workbox build),
+the client subscribes with a VAPID key, and a Postgres `pg_cron` job pings a Vercel function that
+sends the actual notifications and records `reminded_at` to avoid duplicates.
+
+**Sharing into the app.** iOS PWAs can't register as share targets, so an Apple Shortcut POSTs the
+shared link to `/api/save` with a per-user, capability-scoped token — the endpoint attributes the
+save to the right account (via the service-role key, server-side only) without ever exposing user
+credentials.
+
+**Security model.** Every table has Row-Level Security keyed on `auth.uid()`; the browser only ever
+holds the public anon key. The service-role key and VAPID private key live exclusively in server env
+vars. `since_items_status` is a `security_invoker` view so it inherits the caller's RLS.
+
+## Running locally
 
 ```bash
 npm install
-npm run dev          # http://localhost:5173  — runs instantly in offline demo mode
+npm run dev        # http://localhost:5173 — starts in on-device demo mode, no account needed
 ```
 
-To enable cloud sync, create a free [Supabase](https://supabase.com) project, run
-[`schema.sql`](schema.sql) in its SQL editor, and put your Project URL + anon key in `.env.local`
-(see [`.env.example`](.env.example)). Deploy free to Vercel and add the same env vars.
+For cloud mode, create a free [Supabase](https://supabase.com) project, run
+[`schema.sql`](schema.sql) in its SQL editor (tables + RLS + view), and add your Project URL and
+anon key to `.env.local` (template in [`.env.example`](.env.example)). Build with `npm run build`.
 
-## Project layout
+## Project structure
 
 ```
-src/
-  lib/parser.ts        bilingual NLP engine (types, NL dates/times, priority, tags)
-  lib/db.ts            data layer (Supabase ↔ localStorage demo fallback)
-  lib/since.ts         "Since when?" cycle tracker
-  lib/calendar.ts      .ics "Add to Calendar"
-  hooks/               useAuth · useNotes · useSince
-  components/          Composer, NoteCard, sections (since / wish), setup modals, …
-api/                   Vercel functions: save · cron · push-test
-public/push-sw.js      Web Push service-worker handlers
-schema.sql             Postgres tables, RLS policies, views
+src/lib/parser.ts     bilingual NLP engine (types, dates/times, priority, tags)
+src/lib/db.ts         data layer (Supabase ↔ localStorage), auth, CRUD
+src/lib/since.ts      recurring-cycle tracker
+src/hooks/            useAuth · useNotes · useSince
+src/components/       Composer, NoteCard, section views, setup modals
+api/                  Vercel functions: save · cron · push-test
+public/push-sw.js     Web Push service-worker handlers
+schema.sql            Postgres tables, RLS policies, status view
 ```
+
+## Status
+
+Personal project, single developer. Honest current gaps: no automated tests yet; the deployed
+instance requires sign-up (a guest/demo mode is on-device only when self-hosted); a few product
+integrations (Instagram caption fetch, Google Calendar sync) are intentionally deferred in favor of
+lighter-weight paths (`.ics` export, manual filing).
 
 ## License
 
