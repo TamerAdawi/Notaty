@@ -113,8 +113,9 @@ const QUESTION_STARTS = ['what', 'how', 'why', 'when', 'where', 'who', 'which', 
 // Money-making / side-project cues → the Hustle Ideas section.
 const HUSTLE_WORDS = [
   'hustle', 'side hustle', 'make money', 'making money', 'money-making', 'business idea',
-  'startup', 'start-up', 'passive income', 'monetize', 'monetise', 'dropship', 'side income',
-  'earn money', 'sell online', 'ecommerce', 'e-commerce', 'affiliate', 'freelanc',
+  'start a business', 'startup', 'start-up', 'passive income', 'monetize', 'monetise', 'dropship',
+  'side income', 'earn money', 'sell online', 'online store', 'online shop', 'etsy', 'shopify',
+  'fiverr', 'upwork', 'ecommerce', 'e-commerce', 'affiliate', 'freelanc',
   'بيزنس', 'مشروع تجاري', 'مشروع ربحي', 'فكرة مشروع', 'دخل اضافي', 'دخل إضافي', 'مصدر دخل',
   'اربح', 'ربح', 'اكسب', 'تجارة', 'تجاري', 'ستارت اب', 'بيع اونلاين', 'دروبشيبينغ', 'فري لانس',
 ];
