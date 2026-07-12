@@ -4,12 +4,13 @@ A notes app that reads free-form text — in English or Arabic — decides what 
 (a task, a reminder with a due time, a shopping list, a saved video link, a recurring chore…),
 and files it accordingly. Installable as a PWA; sends real push reminders.
 
-**Live:** https://notaty-delta.vercel.app
+[![CI](https://github.com/TamerAdawi/Notaty/actions/workflows/ci.yml/badge.svg)](https://github.com/TamerAdawi/Notaty/actions/workflows/ci.yml)
 
-<p align="center"><img src="public/og-image.png" width="640" alt="Notaty" /></p>
+<p align="center"><img src="public/demo.gif" width="300" alt="Typing an Arabic reminder and watching it parse into the right type, date and time" /></p>
 
-> Note: currently the live URL opens a sign-in screen (see [Guest mode](#status)). To evaluate the
-> app without an account, clone and run it — it boots straight into an on-device demo mode.
+**[Live demo](https://notaty-delta.vercel.app)** — open it and hit **“Try the demo”** for a
+no-account session seeded with sample data (English + Arabic). Above: free-form Arabic
+(`ذكّرني بكرا الساعة وحدة…`) parsed live into a reminder due *tomorrow at 1 PM*.
 
 ## Stack
 
@@ -97,12 +98,22 @@ public/push-sw.js     Web Push service-worker handlers
 schema.sql            Postgres tables, RLS policies, status view
 ```
 
+## Testing
+
+The parser is the core logic, so it has a focused [Vitest suite](src/lib/parser.test.ts) (37 cases):
+all 11 classification types, the ordering rules (a dated action verb must stay a *task*, not become
+an *event*), Arabic edge cases (preposition-fused weekdays like `للجمعة`, spelled-out times
+`الساعة ثنتين ونص`, the `✅` done marker), date rollover (a weekday that *is* today rolls to next
+week; month-boundary crossing; times already past today), and garbage input falling through to a
+plain note. `npm test`. CI (typecheck + tests) runs on every push via GitHub Actions.
+
 ## Status
 
-Personal project, single developer. Honest current gaps: no automated tests yet; the deployed
-instance requires sign-up (a guest/demo mode is on-device only when self-hosted); a few product
-integrations (Instagram caption fetch, Google Calendar sync) are intentionally deferred in favor of
-lighter-weight paths (`.ics` export, manual filing).
+Personal project, single developer. The live deployment has a full **guest/demo mode** (no account
+needed) that forces the localStorage backend at runtime and seeds bilingual sample data;
+push/reminder/share features degrade to a "create an account" prompt rather than failing. A couple
+of product integrations (Instagram caption fetch, silent Google Calendar sync) are intentionally
+deferred in favor of lighter paths (`.ics` export, manual filing).
 
 ## License
 
