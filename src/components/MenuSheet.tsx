@@ -3,6 +3,8 @@ import { isCloud, signOut, type Note, type AppUser } from '../lib/db';
 export default function MenuSheet({
   notes,
   user,
+  guest,
+  onLeaveDemo,
   theme,
   onToggleTheme,
   onClose,
@@ -11,6 +13,8 @@ export default function MenuSheet({
 }: {
   notes: Note[];
   user: AppUser | null;
+  guest: boolean;
+  onLeaveDemo: () => void;
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
   onClose: () => void;
@@ -39,7 +43,7 @@ export default function MenuSheet({
       >
         <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-hairline" />
         <div className="px-4 py-2 text-xs text-muted">
-          {isCloud ? user?.email : 'Offline demo · stored on this device'}
+          {guest ? 'Guest demo · stored on this device' : isCloud ? user?.email : 'Offline demo · stored on this device'}
         </div>
         <button
           className={item}
@@ -66,10 +70,22 @@ export default function MenuSheet({
         <button className={item} onClick={onToggleTheme}>
           {theme === 'dark' ? '☀️' : '🌙'} <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
         </button>
-        {isCloud && (
-          <button className={`${item} text-danger`} onClick={() => signOut()}>
-            🚪 <span>Sign out</span>
+        {guest ? (
+          <button
+            className={`${item} text-accent`}
+            onClick={() => {
+              onClose();
+              onLeaveDemo();
+            }}
+          >
+            ✨ <span>Create an account to sync</span>
           </button>
+        ) : (
+          isCloud && (
+            <button className={`${item} text-danger`} onClick={() => signOut()}>
+              🚪 <span>Sign out</span>
+            </button>
+          )
         )}
         <button className={`${item} text-muted justify-center`} onClick={onClose}>
           Close

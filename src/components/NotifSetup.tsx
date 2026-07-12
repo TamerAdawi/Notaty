@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { enablePush, notifPermission, pushSupported } from '../lib/push';
-import { getSaveToken, isCloud } from '../lib/db';
+import { getSaveToken } from '../lib/db';
+import { usingLocal } from '../lib/session';
 
 export default function NotifSetup({ onClose }: { onClose: () => void }) {
   const [busy, setBusy] = useState(false);
@@ -61,9 +62,9 @@ export default function NotifSetup({ onClose }: { onClose: () => void }) {
             forgotten notes.
           </p>
 
-          {!isCloud ? (
+          {usingLocal() ? (
             <div className="rounded-xl bg-warn/15 text-warn text-sm p-3">
-              Open the live, signed-in app to enable notifications.
+              Reminders are a synced-account feature. Create an account to turn them on.
             </div>
           ) : !pushSupported() ? (
             <div className="rounded-xl bg-warn/15 text-warn text-sm p-3">

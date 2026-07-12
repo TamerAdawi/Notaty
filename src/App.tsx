@@ -19,15 +19,28 @@ import type { WishFields } from './components/wish/AddWishModal';
 import { useSince } from './hooks/useSince';
 import { statusLevel } from './lib/since';
 import { daysSince } from './lib/format';
+import { isGuest, enterGuest, exitGuest, usingLocal } from './lib/session';
+import { seedDemo } from './lib/demo';
 
 // Open, non-reel items untouched for this many days surface in Review.
 const STALE_DAYS = 21;
 
 export default function App() {
   const { user, loading: authLoading } = useAuth();
+  const [guest, setGuest] = useState(isGuest());
   const [theme, setTheme] = useState<'dark' | 'light'>(
     () => (localStorage.getItem('notaty.theme') as 'dark' | 'light') || 'dark',
   );
+
+  function startDemo() {
+    seedDemo();
+    enterGuest();
+    setGuest(true);
+  }
+  function leaveDemo() {
+    exitGuest();
+    setGuest(false);
+  }
 
   useEffect(() => {
     document.documentElement.classList.toggle('light', theme === 'light');
@@ -44,9 +57,17 @@ export default function App() {
     );
   }
 
-  if (isCloud && !user) return <AuthScreen />;
+  if (isCloud && !user && !guest) return <AuthScreen onGuest={startDemo} />;
 
-  return <Shell userId={user!.id} theme={theme} setTheme={setTheme} />;
+  return (
+    <Shell
+      userId={user?.id ?? 'guest'}
+      guest={!user && guest}
+      onLeaveDemo={leaveDemo}
+      theme={theme}
+      setTheme={setTheme}
+    />
+  );
 }
 
 type View = 'capture' | 'notes' | 'saved' | 'hustle' | 'wish' | 'since' | 'review';
@@ -61,10 +82,14 @@ function matchesSaved(n: Note, f: string): boolean {
 
 function Shell({
   userId,
+  guest,
+  onLeaveDemo,
   theme,
   setTheme,
 }: {
   userId: string;
+  guest: boolean;
+  onLeaveDemo: () => void;
   theme: 'dark' | 'light';
   setTheme: (t: 'dark' | 'light') => void;
 }) {
@@ -164,6 +189,8 @@ function Shell({
         <MenuSheet
           notes={notes}
           user={user}
+          guest={guest}
+          onLeaveDemo={onLeaveDemo}
           theme={theme}
           onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           onClose={() => setMenu(false)}
@@ -174,6 +201,17 @@ function Shell({
       {saveSetup && <SaveSetup onClose={() => setSaveSetup(false)} />}
       {notifSetup && <NotifSetup onClose={() => setNotifSetup(false)} />}
     </>
+  );
+
+  const demoBanner = guest && (
+    <div className="max-w-md mx-auto w-full px-4">
+      <div className="rounded-xl bg-warn/10 border border-warn/30 text-warn text-xs px-3 py-2 flex items-center gap-2">
+        <span>⚲ Demo — data stays on this device.</span>
+        <button onClick={onLeaveDemo} className="press ml-auto underline whitespace-nowrap">
+          Create an account →
+        </button>
+      </div>
+    </div>
   );
 
   /* ----------------------------- CAPTURE ----------------------------- */
@@ -188,10 +226,10 @@ function Shell({
           </h1>
           <span
             className={`ml-auto text-[10px] rounded-full px-2 py-0.5 ${
-              isCloud ? 'bg-ok/15 text-ok' : 'bg-warn/15 text-warn'
+              usingLocal() ? 'bg-warn/15 text-warn' : 'bg-ok/15 text-ok'
             }`}
           >
-            {isCloud ? '☁ Synced' : '⚲ Demo'}
+            {usingLocal() ? '⚲ Demo' : '☁ Synced'}
           </span>
           <button
             onClick={() => setMenu(true)}
@@ -201,6 +239,8 @@ function Shell({
             ⋯
           </button>
         </header>
+
+        {demoBanner}
 
         <main className="flex-1 grid place-items-center px-4 pb-10">
           <div className="w-full max-w-md">

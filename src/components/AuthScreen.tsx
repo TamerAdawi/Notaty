@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { signIn, signUp } from '../lib/db';
 
-export default function AuthScreen() {
+export default function AuthScreen({ onGuest }: { onGuest: () => void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -72,6 +72,22 @@ export default function AuthScreen() {
         </button>
 
         {msg && <p className="text-xs text-warn mt-4 leading-relaxed">{msg}</p>}
+
+        <div className="flex items-center gap-3 my-5">
+          <div className="h-px flex-1 bg-hairline" />
+          <span className="text-xs text-muted">or</span>
+          <div className="h-px flex-1 bg-hairline" />
+        </div>
+
+        <button
+          onClick={onGuest}
+          className="press w-full rounded-xl border border-accent/50 bg-accent/10 text-accent font-semibold py-3"
+        >
+          Try the demo — no account needed
+        </button>
+        <p className="text-[11px] text-muted mt-2 text-center">
+          Loads sample notes on this device. Nothing is saved to the cloud.
+        </p>
       </div>
     </div>
   );

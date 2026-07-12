@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getSaveToken, isCloud } from '../lib/db';
+import { getSaveToken } from '../lib/db';
+import { usingLocal } from '../lib/session';
 
 export default function SaveSetup({ onClose }: { onClose: () => void }) {
   const [token, setToken] = useState<string | null>(null);
@@ -10,7 +11,7 @@ export default function SaveSetup({ onClose }: { onClose: () => void }) {
   const endpoint = `${window.location.origin}/api/save`;
 
   useEffect(() => {
-    if (!isCloud) {
+    if (usingLocal()) {
       setLoading(false);
       return;
     }
@@ -60,9 +61,9 @@ export default function SaveSetup({ onClose }: { onClose: () => void }) {
             Facebook straight into Notaty — no copy-paste.
           </p>
 
-          {!isCloud ? (
+          {usingLocal() ? (
             <div className="rounded-xl bg-warn/15 text-warn text-sm p-3">
-              This works on the live, signed-in app. Open your deployed Notaty and sign in first.
+              Saving from your phone needs a synced account. Create one to enable it.
             </div>
           ) : loading ? (
             <div className="text-muted text-sm py-6 text-center">Loading your token…</div>

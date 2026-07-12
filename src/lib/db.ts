@@ -1,6 +1,7 @@
 // Notaty data layer. One API for the app; hides whether we talk to Supabase
 // (cloud, synced, multi-device) or localStorage (offline demo before keys are set).
 import { supabase, isCloud } from './supabase';
+import { usingLocal } from './session';
 import type { NoteType, Priority, NoteMeta, ParsedNote } from './parser';
 
 export interface Note {
@@ -29,7 +30,7 @@ export { isCloud };
 /* ------------------------------ auth ------------------------------ */
 
 export async function getUser(): Promise<AppUser | null> {
-  if (!isCloud) return { id: 'local', email: 'demo (offline)' };
+  if (usingLocal()) return { id: 'local', email: 'demo (offline)' };
   const { data } = await supabase!.auth.getUser();
   return data.user ? { id: data.user.id, email: data.user.email ?? '' } : null;
 }
@@ -47,12 +48,12 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function signOut() {
-  if (!isCloud) return;
+  if (usingLocal()) return;
   await supabase!.auth.signOut();
 }
 
 export function onAuthChange(cb: (user: AppUser | null) => void): () => void {
-  if (!isCloud) {
+  if (usingLocal()) {
     cb({ id: 'local', email: 'demo (offline)' });
     return () => {};
   }
@@ -81,7 +82,7 @@ function lsWrite(notes: Note[]) {
 }
 
 export async function listNotes(): Promise<Note[]> {
-  if (!isCloud) {
+  if (usingLocal()) {
     return lsRead().sort(
       (a, b) => +new Date(b.created_at) - +new Date(a.created_at),
     );
@@ -96,7 +97,7 @@ export async function listNotes(): Promise<Note[]> {
 }
 
 export async function addNote(parsed: ParsedNote): Promise<Note> {
-  if (!isCloud) {
+  if (usingLocal()) {
     const now = new Date().toISOString();
     const row: Note = {
       ...parsed,
@@ -122,7 +123,7 @@ export async function addNote(parsed: ParsedNote): Promise<Note> {
 }
 
 export async function updateNote(id: string, patch: Partial<Note>): Promise<Note | null> {
-  if (!isCloud) {
+  if (usingLocal()) {
     const notes = lsRead();
     const i = notes.findIndex((n) => n.id === id);
     if (i < 0) return null;
@@ -147,7 +148,7 @@ export async function savePushSubscription(sub: {
   p256dh: string;
   auth: string;
 }): Promise<void> {
-  if (!isCloud) throw new Error('Sign in on the live app to enable notifications.');
+  if (usingLocal()) throw new Error('Sign in on the live app to enable notifications.');
   const { data: u } = await supabase!.auth.getUser();
   if (!u.user) throw new Error('Not signed in');
   const { error } = await supabase!
@@ -161,7 +162,7 @@ export async function savePushSubscription(sub: {
 // Fetch (or lazily create) the current user's secret token used by the
 // "Save to Notaty" Apple Shortcut. Cloud-only.
 export async function getSaveToken(): Promise<string | null> {
-  if (!isCloud) return null;
+  if (usingLocal()) return null;
   const { data: u } = await supabase!.auth.getUser();
   if (!u.user) return null;
 
@@ -182,7 +183,7 @@ export async function getSaveToken(): Promise<string | null> {
 }
 
 export async function deleteNote(id: string): Promise<void> {
-  if (!isCloud) {
+  if (usingLocal()) {
     lsWrite(lsRead().filter((n) => n.id !== id));
     return;
   }
