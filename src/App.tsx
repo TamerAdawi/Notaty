@@ -70,7 +70,7 @@ export default function App() {
   );
 }
 
-type View = 'capture' | 'notes' | 'saved' | 'hustle' | 'wish' | 'since' | 'review';
+type View = 'capture' | 'notes' | 'saved' | 'hustle' | 'wish' | 'bucket' | 'since' | 'review';
 
 function matchesSaved(n: Note, f: string): boolean {
   if (f === 'all') return true;
@@ -110,14 +110,19 @@ function Shell({
   const reels = useMemo(() => notes.filter((n) => n.type === 'reel'), [notes]);
   const hustle = useMemo(() => notes.filter((n) => n.type === 'hustle'), [notes]);
   const wish = useMemo(() => notes.filter((n) => n.type === 'wish'), [notes]);
+  const bucket = useMemo(() => notes.filter((n) => n.type === 'bucket'), [notes]);
   const plainNotes = useMemo(
-    () => notes.filter((n) => n.type !== 'reel' && n.type !== 'hustle' && n.type !== 'wish'),
+    () =>
+      notes.filter(
+        (n) => n.type !== 'reel' && n.type !== 'hustle' && n.type !== 'wish' && n.type !== 'bucket',
+      ),
     [notes],
   );
   const openNotesCount = plainNotes.filter((n) => !n.done).length;
   const unwatchedCount = reels.filter((n) => !n.done).length;
   const openHustleCount = hustle.filter((n) => !n.done).length;
   const openWishCount = wish.filter((n) => !n.done).length;
+  const openBucketCount = bucket.filter((n) => !n.done).length;
 
   const addWish = (f: WishFields) =>
     add(f.name, { type: 'wish', meta: { price: f.price, currency: f.currency, url: f.url } }).then(
@@ -181,6 +186,15 @@ function Shell({
         .filter(textMatch)
         .sort((a, b) => Number(b.pinned) - Number(a.pinned)),
     [hustle, filter, q],
+  );
+
+  const visibleBucket = useMemo(
+    () =>
+      bucket
+        .filter((n) => matchesFilter(n, filter))
+        .filter(textMatch)
+        .sort((a, b) => Number(a.done) - Number(b.done)),
+    [bucket, filter, q],
   );
 
   const overlays = (
@@ -296,6 +310,15 @@ function Shell({
                 🛍️ Wish list
                 <span className="rounded-full bg-accent/20 text-accent px-2 py-0.5 text-xs">
                   {openWishCount}
+                </span>
+              </button>
+              <button
+                onClick={() => setView('bucket')}
+                className="press flex items-center gap-2 rounded-full bg-surface border border-hairline px-4 py-2 text-sm text-ink"
+              >
+                🪣 Bucket list
+                <span className="rounded-full bg-accent/20 text-accent px-2 py-0.5 text-xs">
+                  {openBucketCount}
                 </span>
               </button>
             </div>
@@ -430,9 +453,22 @@ function Shell({
   /* ------------------------ SHARED BROWSE CHROME --------------------- */
   const isSaved = view === 'saved';
   const isHustle = view === 'hustle';
-  const list = isSaved ? visibleReels : isHustle ? visibleHustle : visibleNotes;
-  const sectionTitle = isSaved ? '🎬 Saved' : isHustle ? '🚀 Hustle Ideas' : '🗂 My notes';
-  const sectionCount = isSaved ? reels.length : isHustle ? hustle.length : plainNotes.length;
+  const isBucket = view === 'bucket';
+  const list = isSaved ? visibleReels : isHustle ? visibleHustle : isBucket ? visibleBucket : visibleNotes;
+  const sectionTitle = isSaved
+    ? '🎬 Saved'
+    : isHustle
+      ? '🚀 Hustle Ideas'
+      : isBucket
+        ? '🪣 Bucket list'
+        : '🗂 My notes';
+  const sectionCount = isSaved
+    ? reels.length
+    : isHustle
+      ? hustle.length
+      : isBucket
+        ? bucket.length
+        : plainNotes.length;
 
   return (
     <div className="min-h-dvh">
@@ -462,7 +498,7 @@ function Shell({
           {isSaved ? (
             <SavedFilters reels={reels} active={savedFilter} onChange={setSavedFilter} />
           ) : (
-            <FilterBar notes={isHustle ? hustle : plainNotes} active={filter} onChange={setFilter} />
+            <FilterBar notes={isHustle ? hustle : isBucket ? bucket : plainNotes} active={filter} onChange={setFilter} />
           )}
         </div>
 
@@ -471,7 +507,7 @@ function Shell({
           {loading ? (
             <div className="text-muted text-sm text-center py-16">Loading…</div>
           ) : list.length === 0 ? (
-            <EmptyState filter={search ? 'search' : isSaved ? 'saved' : isHustle ? 'hustle' : filter} />
+            <EmptyState filter={search ? 'search' : isSaved ? 'saved' : isHustle ? 'hustle' : isBucket ? 'bucket' : filter} />
           ) : (
             list.map((n) => (
               <NoteCard

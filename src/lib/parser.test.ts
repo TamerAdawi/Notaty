@@ -75,6 +75,12 @@ describe('classification — all types', () => {
     expect(type('بيزنس قهوة مختصة اونلاين')).toBe('hustle');
   });
 
+  it('bucket list (life goals)', () => {
+    expect(type('bucket list: skydive over the Alps')).toBe('bucket');
+    expect(type('someday I want to see the northern lights')).toBe('bucket');
+    expect(type('قبل ما اموت ازور اليابان')).toBe('bucket');
+  });
+
   it('reels from links, with platform', () => {
     const ig = parseNote('https://www.instagram.com/reel/CxAbc123/');
     expect(ig.type).toBe('reel');

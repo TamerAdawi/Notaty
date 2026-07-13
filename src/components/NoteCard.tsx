@@ -32,7 +32,7 @@ export default function NoteCard({ note, onToggleDone, onTogglePin, onDelete, on
   // Everything except list/goal/question gets a leading done checkbox.
   // (list completes via its items, goal via progress, question via "answered".)
   const checkable =
-    t === 'task' || t === 'reminder' || t === 'event' || t === 'note' || t === 'idea' || t === 'hustle' || isReel;
+    t === 'task' || t === 'reminder' || t === 'event' || t === 'note' || t === 'idea' || t === 'hustle' || t === 'bucket' || isReel;
   const isQuestion = t === 'question';
   const url = note.meta.url;
   const platform = note.meta.platform ?? 'link';

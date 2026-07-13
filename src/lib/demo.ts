@@ -65,6 +65,11 @@ export function seedDemo(force = false): void {
       make('side hustle: sell Notion templates online', {}, 4),
       make('بيزنس: قهوة مختصة اونلاين مع اشتراك شهري', {}, 7),
 
+      // Bucket list
+      make('see the northern lights in Iceland', { type: 'bucket', content: 'see the northern lights in Iceland' }, 9),
+      make('learn to surf', { type: 'bucket', done: true, content: 'learn to surf' }, 30),
+      make('زيارة اليابان في موسم الساكورا', { type: 'bucket', content: 'زيارة اليابان في موسم الساكورا' }, 12),
+
       // Wish list
       make('AirPods Pro', { type: 'wish', content: 'AirPods Pro', meta: { price: 999, currency: '₪' } }, 5),
       make('mechanical keyboard', { type: 'wish', content: 'Keychron K2 keyboard', meta: { price: 450, currency: '₪' } }, 6),

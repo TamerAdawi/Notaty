@@ -5,6 +5,7 @@ export type NoteType =
   | 'reel'
   | 'hustle'
   | 'wish'
+  | 'bucket'
   | 'reminder'
   | 'event'
   | 'list'
@@ -78,6 +79,7 @@ export const TYPE_META: Record<NoteType, { icon: string; label: string }> = {
   reel: { icon: '🎬', label: 'Saved' },
   hustle: { icon: '🚀', label: 'Hustle' },
   wish: { icon: '🛍️', label: 'Wish' },
+  bucket: { icon: '🪣', label: 'Bucket' },
   reminder: { icon: '⏰', label: 'Reminder' },
   event: { icon: '📅', label: 'Event' },
   list: { icon: '☑️', label: 'List' },
@@ -118,6 +120,13 @@ const HUSTLE_WORDS = [
   'fiverr', 'upwork', 'ecommerce', 'e-commerce', 'affiliate', 'freelanc',
   'بيزنس', 'مشروع تجاري', 'مشروع ربحي', 'فكرة مشروع', 'دخل اضافي', 'دخل إضافي', 'مصدر دخل',
   'اربح', 'ربح', 'اكسب', 'تجارة', 'تجاري', 'ستارت اب', 'بيع اونلاين', 'دروبشيبينغ', 'فري لانس',
+];
+
+// Life-goal / experience cues → the Bucket List section.
+const BUCKET_WORDS = [
+  'bucket list', 'before i die', 'someday i want', 'someday i would', 'one day i want',
+  "one day i'll", 'in my lifetime', 'always wanted to', 'life goal',
+  'قبل ما اموت', 'قبل ما أموت', 'قائمة الامنيات', 'قائمة الأمنيات', 'بوكيت ليست', 'حلم حياتي',
 ];
 
 const URGENT_WORDS = ['urgent', 'asap', 'critical', 'emergency', 'عاجل', 'ضروري'];
@@ -415,6 +424,9 @@ function detectType(text: string): { type: NoteType; meta: NoteMeta } {
   ) {
     return { type: 'question', meta: {} };
   }
+
+  // 3b. Bucket list / life goal (before goal — "someday i want" beats generic "i want to")
+  if (includesAny(lower, BUCKET_WORDS)) return { type: 'bucket', meta: {} };
 
   // 4. Goal
   if (includesAny(lower, GOAL_WORDS) || /\b(run|save|lose|read|learn|finish|reach|hit)\b.*\b\d+\s?(k|kg|km|lbs|books|\$|kg)?\b.*\b(by|before|this year|next year)\b/.test(lower)) {
